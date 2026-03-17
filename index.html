@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Who The Spy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{
+      --bg:#080b14;
+      --bg2:#0c1020;
+      --glass:#ffffff08;
+      --glass2:#ffffff12;
+      --border:#ffffff14;
+      --border2:#ffffff22;
+      --accent:#6c63ff;
+      --accent2:#a78bfa;
+      --teal:#2dd4bf;
+      --red:#f87171;
+      --green:#4ade80;
+      --yellow:#fbbf24;
+      --text:#f0f4ff;
+      --text2:#94a3b8;
+      --text3:#475569;
+      --glow:rgba(108,99,255,.35);
+      --glow2:rgba(45,212,191,.25);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+    /* ── ANIMATED BG ── */
+    .bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:orbFloat 12s ease-in-out infinite}
+    .orb1{width:400px;height:400px;background:var(--accent);top:-100px;left:-100px;animation-delay:0s}
+    .orb2{width:350px;height:350px;background:var(--teal);bottom:-80px;right:-80px;animation-delay:-4s}
+    .orb3{width:250px;height:250px;background:#f472b6;top:40%;left:60%;animation-delay:-8s}
+    @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-30px) scale(1.05)}}
+
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+
+    /* ── WELCOME SCREEN ── */
+    #welcome{
+      position:fixed;inset:0;z-index:100;
+      background:var(--bg);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:24px;
+    }
+    #welcome.exit{animation:welcomeExit .6s cubic-bezier(.4,0,.2,1) forwards}
+    @keyframes welcomeExit{to{opacity:0;transform:scale(1.04)}}
+
+    .wlc-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:var(--glass2);border:1px solid var(--border2);
+      border-radius:100px;padding:6px 14px;
+      font-size:11px;font-weight:600;letter-spacing:2px;color:var(--teal);
+      text-transform:uppercase;margin-bottom:32px;
+      animation:fadeSlideUp .7s .1s both;
+    }
+    .wlc-logo{
+      text-align:center;margin-bottom:16px;
+      animation:fadeSlideUp .7s .25s both;
+    }
+    @keyframes iconPulse{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.08) rotate(3deg)}}
+    .wlc-logo h1{
+      font-family:'Syne',sans-serif;font-size:clamp(36px,9vw,56px);
+      font-weight:800;letter-spacing:-1px;line-height:1;
+      background:linear-gradient(135deg,#fff 0%,var(--accent2) 50%,var(--teal) 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .wlc-logo p{font-size:14px;color:var(--text2);margin-top:10px;font-weight:400}
+
+    .wlc-features{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;
+      width:100%;max-width:320px;margin:24px 0;
+      animation:fadeSlideUp .7s .4s both;
+    }
+    .wlc-feat{
+      background:var(--glass);border:1px solid var(--border);
+      border-radius:12px;padding:14px 10px;text-align:center;font-size:12px;
+      color:var(--text2);font-weight:500;line-height:1.4;
+    }
+    .wlc-feat .fi{font-size:18px;display:block;margin-bottom:5px}
+
+    .wlc-cta{
+      width:100%;max-width:320px;
+      animation:fadeSlideUp .7s .55s both;
+    }
+    .wlc-btn{
+      width:100%;padding:18px;border:none;border-radius:16px;cursor:pointer;
+      font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;
+      background:linear-gradient(135deg,var(--accent),var(--teal));
+      color:#fff;box-shadow:0 0 40px var(--glow);
+      transition:transform .2s,box-shadow .2s;
+      position:relative;overflow:hidden;
+    }
+    .wlc-btn::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+    }
+    .wlc-btn:active{transform:scale(.97)}
+    .wlc-btn:hover{box-shadow:0 0 60px var(--glow)}
+
+    .wlc-footer{
+      margin-top:20px;font-size:11px;color:var(--text3);
+      animation:fadeSlideUp .7s .65s both;text-align:center;
+    }
+
+    @keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── PARTICLES ON WELCOME ── */
+    .particle{
+      position:absolute;border-radius:50%;
+      animation:particleFly linear infinite;opacity:0;
+    }
+    @keyframes particleFly{
+      0%{opacity:0;transform:translateY(0) scale(0)}
+      10%{opacity:.6}
+      90%{opacity:.3}
+      100%{opacity:0;transform:translateY(-100vh) scale(1.5)}
+    }
+
+    /* ── MAIN UI ── */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+    .fade{animation:fadeUp .35s cubic-bezier(.4,0,.2,1) both}
+
+    /* ── HEADER ── */
+    .page-header{text-align:center;margin-bottom:24px;padding-top:8px}
+    .page-header .eyebrow{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:10px;font-weight:700;letter-spacing:3px;color:var(--teal);
+      text-transform:uppercase;margin-bottom:10px;
+      background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.2);
+      border-radius:100px;padding:4px 12px;
+    }
+    .page-header h1{
+      font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);
+      font-weight:800;letter-spacing:-0.5px;color:var(--text);
+    }
+    .page-header .sub{font-size:13px;color:var(--text2);margin-top:6px;font-weight:400}
+
+    /* ── CARD ── */
+    .card{
+      background:var(--glass);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1px solid var(--border);
+      border-radius:20px;padding:20px;margin-bottom:14px;
+      position:relative;overflow:hidden;
+    }
+    .card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+    }
+    .card-accent{border-color:rgba(108,99,255,.3);background:rgba(108,99,255,.06)}
+    .card-teal{border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.06)}
+    .card-red{border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)}
+    .card-green{border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.06)}
+
+    .divider{height:1px;background:var(--border);margin:16px 0}
+
+    /* ── LABEL ── */
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+
+    /* ── BUTTON ── */
+    .btn{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:15px 20px;margin-top:10px;
+      border:none;border-radius:14px;cursor:pointer;
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      letter-spacing:.3px;transition:all .2s;position:relative;overflow:hidden;
+    }
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn:active:not(:disabled){transform:scale(.97)}
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent),#8b5cf6);
+      color:#fff;box-shadow:0 4px 24px rgba(108,99,255,.4);
+    }
+    .btn-primary:hover:not(:disabled){box-shadow:0 6px 32px rgba(108,99,255,.55)}
+
+    .btn-teal{
+      background:linear-gradient(135deg,var(--teal),#0891b2);
+      color:#fff;box-shadow:0 4px 24px rgba(45,212,191,.35);
+    }
+
+    .btn-outline{
+      background:transparent;color:var(--accent2);
+      border:1.5px solid rgba(108,99,255,.5);
+    }
+    .btn-outline:hover:not(:disabled){background:rgba(108,99,255,.1)}
+
+    .btn-ghost{
+      background:var(--glass);color:var(--text2);
+      border:1.5px solid var(--border2);
+    }
+    .btn-ghost:hover:not(:disabled){background:var(--glass2)}
+
+    .btn-danger{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff}
+
+    /* ── INPUT ── */
+    .inp{
+      width:100%;padding:14px 16px;
+      background:rgba(255,255,255,.06);
+      border:1.5px solid var(--border2);border-radius:12px;
+      color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:400;
+      outline:none;transition:border-color .2s,background .2s;
+    }
+    .inp:focus{border-color:var(--accent);background:rgba(108,99,255,.08)}
+    .inp::placeholder{color:var(--text3)}
+    .inp-code{
+      font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+      text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px;
+    }
+
+    /* ── BADGE ── */
+    .badge{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:4px 10px;font-size:10px;font-weight:700;
+      letter-spacing:1.5px;border-radius:100px;text-transform:uppercase;
+    }
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-gld{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+    .b-acc{background:rgba(108,99,255,.15);color:var(--accent2);border:1px solid rgba(108,99,255,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border)}
+    .b-teal{background:rgba(45,212,191,.15);color:var(--teal);border:1px solid rgba(45,212,191,.3)}
+
+    /* ── PLAYER ITEM ── */
+    .pi{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 16px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);
+      font-size:14px;transition:all .2s;
+    }
+    .pi.active{background:rgba(108,99,255,.1);border-color:rgba(108,99,255,.35)}
+    .pi.done{background:rgba(74,222,128,.06);border-color:rgba(74,222,128,.25)}
+    .pi.clickable{cursor:pointer}
+    .pi.clickable:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);transform:translateX(3px)}
+    .pi.clickable:active{transform:scale(.98)}
+
+    /* ── WORD BOX ── */
+    .word-box{
+      background:linear-gradient(135deg,rgba(108,99,255,.15),rgba(45,212,191,.1));
+      border:1.5px solid rgba(108,99,255,.3);
+      border-radius:18px;padding:24px 20px;text-align:center;margin:14px 0;
+      box-shadow:0 0 40px rgba(108,99,255,.15);
+    }
+    .word-box .word{
+      font-family:'Syne',sans-serif;
+      font-size:clamp(22px,9vw,42px);
+      font-weight:800;
+      background:linear-gradient(135deg,#fff,var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      letter-spacing:1px;margin-top:8px;
+      word-break:break-word;overflow-wrap:anywhere;line-height:1.2;
+    }
+
+    /* ── STATUS BAR ── */
+    .sbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 16px;background:var(--glass);border:1px solid var(--border);
+      border-radius:14px;margin-bottom:16px;font-size:12px;font-weight:500;
+    }
+    .sbar .rnd{color:var(--accent2);font-weight:700;font-family:'Syne',sans-serif}
+    .sbar .cod{
+      font-family:'Syne',sans-serif;font-weight:800;font-size:14px;
+      background:linear-gradient(135deg,var(--teal),var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+
+    /* ── DOTS ── */
+    .dots{display:flex;justify-content:center;gap:6px;margin-top:16px}
+    .dot{height:6px;border-radius:3px;transition:all .3s}
+    .dot.dn{background:var(--green);width:6px}
+    .dot.cu{background:var(--accent);width:22px;box-shadow:0 0 10px var(--glow)}
+    .dot.wt{background:var(--text3);width:6px;opacity:.4}
+
+    /* ── ROOM CODE BIG ── */
+    .rcode{
+      font-family:'Syne',sans-serif;font-size:52px;font-weight:800;
+      background:linear-gradient(135deg,var(--accent2),var(--teal));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      text-align:center;letter-spacing:12px;padding:16px 0;
+    }
+
+    /* ── CLUE ROW ── */
+    .crow{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:12px 16px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);
+    }
+    .crow .cn{font-size:14px;color:var(--text2)}
+    .crow .cv{font-size:15px;font-weight:600;color:var(--accent2);font-style:italic}
+
+    /* ── VOTE PROGRESS ── */
+    .vp{text-align:center;padding:8px;margin-bottom:8px;font-size:13px;color:var(--text2)}
+    .vp span{color:var(--accent2);font-weight:700;font-family:'Syne',sans-serif;font-size:16px}
+
+    /* ── WIN SCREEN ── */
+    .win-icon{font-size:64px;text-align:center;margin-bottom:12px;display:block;animation:iconPulse 2s ease-in-out infinite}
+    .wtit{font-family:'Syne',sans-serif;font-size:clamp(24px,7vw,36px);font-weight:800;letter-spacing:-0.5px;text-align:center}
+
+    /* ── PAIR CARD ── */
+    .pair-half{
+      flex:1;border-radius:14px;padding:16px;text-align:center;
+    }
+    .pair-half .plbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.7}
+    .pair-half .pword{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+
+    /* ── TOAST ── */
+    #toast{
+      position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+      background:rgba(15,20,40,.95);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid rgba(108,99,255,.4);border-radius:14px;
+      padding:12px 22px;font-size:13px;font-weight:500;
+      color:var(--text);z-index:999;transition:transform .35s cubic-bezier(.4,0,.2,1);
+      max-width:320px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    /* ── LOADER ── */
+    .loader{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:50vh;gap:16px;
+    }
+    .loader-ring{
+      width:44px;height:44px;border-radius:50%;
+      border:3px solid rgba(108,99,255,.2);
+      border-top-color:var(--accent);
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+
+    /* ── SPINNER PULSE ── */
+    .waiting-pulse{
+      display:flex;gap:5px;align-items:center;justify-content:center;margin:4px 0;
+    }
+    .waiting-pulse span{
+      width:6px;height:6px;border-radius:50%;background:var(--teal);
+      animation:pulseDot .9s ease-in-out infinite;
+    }
+    .waiting-pulse span:nth-child(2){animation-delay:.15s}
+    .waiting-pulse span:nth-child(3){animation-delay:.3s}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+
+    /* ── PLAYER COUNT SELECTOR ── */
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .count-btn{
+      width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);
+      background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;
+    }
+    .count-btn:hover{background:var(--glass2);border-color:var(--accent)}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{
+      flex:1;text-align:center;font-family:'Syne',sans-serif;
+      font-size:38px;font-weight:800;
+      background:linear-gradient(135deg,var(--text),var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+
+    /* ── SEPARATOR ── */
+    .sep{
+      display:flex;align-items:center;gap:12px;margin:14px 0;
+      font-size:11px;color:var(--text3);font-weight:600;letter-spacing:1px;
+    }
+    .sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* scrollbar */
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(108,99,255,.4);border-radius:2px}
+  </style>
+</head>
+<body>
+  <!-- BG ORBS -->
+  <div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <!-- WELCOME SCREEN -->
+  <div id="welcome">
+    <div class="bg-orbs" style="position:absolute">
+      <div class="orb orb1" style="opacity:.3"></div>
+      <div class="orb orb2" style="opacity:.3"></div>
+    </div>
+    <div id="particles"></div>
+
+    <div class="wlc-badge">Social Deduction Game</div>
+
+    <div class="wlc-logo">
+      <h1>WHO THE SPY</h1>
+      <p>Siapa mata-mata di antara kamu?</p>
+    </div>
+
+    <div class="wlc-features">
+      <div class="wlc-feat">
+        <span class="fi">🌐</span>Online<br>Multiplayer
+      </div>
+      <div class="wlc-feat">
+        <span class="fi">📱</span>Pass &<br>Play
+      </div>
+      <div class="wlc-feat">
+        <span class="fi">👥</span>3–10<br>Pemain
+      </div>
+      <div class="wlc-feat">
+        <span class="fi">🎭</span>Real-time<br>Sync
+      </div>
+    </div>
+
+    <div class="wlc-cta">
+      <button class="wlc-btn" onclick="enterApp()">
+        Mulai Bermain →
+      </button>
+    </div>
+
+    <p class="wlc-footer">Gratis · Tanpa login · Langsung main</p>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+  <div id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+  // ── PARTICLES ────────────────────────────────────────────────────
+  (function(){
+    const c=document.getElementById('particles');
+    const colors=['#6c63ff','#2dd4bf','#a78bfa','#f472b6','#fbbf24'];
+    for(let i=0;i<25;i++){
+      const p=document.createElement('div');
+      p.className='particle';
+      const sz=Math.random()*6+3;
+      p.style.cssText=`
+        width:${sz}px;height:${sz}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        left:${Math.random()*100}%;
+        top:${Math.random()*100+100}%;
+        animation-duration:${Math.random()*8+6}s;
+        animation-delay:${Math.random()*5}s;
+        opacity:0;
+      `;
+      c.appendChild(p);
+    }
+  })();
+
+  function enterApp(){
+    const w=document.getElementById('welcome');
+    w.classList.add('exit');
+    setTimeout(()=>{w.style.display='none';},600);
+  }
+
+  // ── WORD PAIRS ──────────────────────────────────────────────────
+  const PAIRS=[
+    ["Kucing","Anjing"],["Nasi","Roti"],["Pantai","Gunung"],["Apel","Jeruk"],
+    ["Motor","Mobil"],["Dokter","Perawat"],["Guru","Dosen"],["Polisi","Tentara"],
+    ["Kopi","Teh"],["Sepatu","Sandal"],["Hujan","Salju"],["Sungai","Danau"],
+    ["Gitar","Piano"],["Sate","Bakso"],["Rendang","Gulai"],["Pisang","Mangga"],
+    ["Ayam","Bebek"],["Buku","Majalah"],["Meja","Kursi"],["Lampu","Lilin"],
+    ["Nasi Goreng","Mie Goreng"],["Warung","Restoran"],["Ojek","Angkot"],
+    ["Tempe","Tahu"],["Sambal","Kecap"],["Batik","Tenun"],["Becak","Bajaj"],
+    ["Komputer","Laptop"],["Pena","Pensil"],["Masjid","Gereja"],
+    ["Kolam Renang","Pantai"],["Roti Bakar","Roti Panggang"],
+  ];
+
+  // ── STATE ────────────────────────────────────────────────────────
+  const S={
+    myId:localStorage.getItem('wts_id')||genId(),
+    myName:'',roomCode:'',isHost:false,mode:'online',
+    room:null,unsubFn:null,
+    oPlayers:[],oPair:null,oDistIdx:0,oShowWord:false,
+    oClueIdx:0,oVoteIdx:0,oVoteMap:{},oElim:null,
+    oGuessState:'idle',oRound:1,oPhase:'distribute',
+    oWinner:'',oWinReason:'',oIsTie:false,
+    oCount:4,oNames:Array.from({length:10},(_,i)=>`Pemain ${i+1}`),
+  };
+  localStorage.setItem('wts_id',S.myId);
+
+  let db=null;
+  function initFB(){
+    try{
+      if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;
+      if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+      db=firebase.database();return true;
+    }catch(e){return false;}
+  }
+  const FB=initFB();
+
+  // ── HELPERS ──────────────────────────────────────────────────────
+  function genId(){return'p'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+  function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+  function spyCnt(n){return n>=8?2:1;}
+  function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+  function aliveList(players){return Object.entries(players).filter(([,p])=>p.isAlive).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0));}
+  function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+  function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  // ── FIREBASE OPS ─────────────────────────────────────────────────
+  async function fbCreate(name){
+    let code,exists=true;
+    while(exists){code=genCode();const s=await db.ref(`rooms/${code}`).once('value');exists=s.exists()&&s.val().status!=='gameover';}
+    const now=Date.now();
+    await db.ref(`rooms/${code}`).set({
+      code,hostId:S.myId,status:'lobby',round:1,
+      wordPair:null,clueOrder:[],currentClueIndex:0,
+      winner:null,winReason:'',eliminated:null,isTie:false,createdAt:now,
+      players:{[S.myId]:{name,isAlive:true,isSpy:false,word:'',clue:'',hasSeenWord:false,hasVoted:false,joinedAt:now}}
+    });
+    return code;
+  }
+  async function fbJoin(code,name){
+    const s=await db.ref(`rooms/${code}`).once('value');
+    if(!s.exists())throw new Error('Room tidak ditemukan');
+    const r=s.val();
+    if(r.status!=='lobby')throw new Error('Game sudah dimulai');
+    if(Object.keys(r.players||{}).length>=10)throw new Error('Room penuh (maks 10)');
+    if(r.players&&r.players[S.myId]){await db.ref(`rooms/${code}/players/${S.myId}/name`).set(name);return r;}
+    await db.ref(`rooms/${code}/players/${S.myId}`).set({name,isAlive:true,isSpy:false,word:'',clue:'',hasSeenWord:false,hasVoted:false,joinedAt:Date.now()});
+    return r;
+  }
+  function fbListen(code){
+    if(S.unsubFn)S.unsubFn();
+    const ref=db.ref(`rooms/${code}`);
+    const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});
+    S.unsubFn=()=>ref.off('value',h);
+  }
+  async function fbStart(){
+    const r=S.room,pids=Object.keys(r.players);
+    if(pids.length<3){toast('Minimal 3 pemain!');return;}
+    const pair=PAIRS[Math.floor(Math.random()*PAIRS.length)];
+    const sc=spyCnt(pids.length);const spies=new Set();
+    while(spies.size<sc)spies.add(pids[Math.floor(Math.random()*pids.length)]);
+    const u={};
+    pids.forEach(id=>{u[`players/${id}/isSpy`]=spies.has(id);u[`players/${id}/word`]=spies.has(id)?pair[1]:pair[0];u[`players/${id}/hasSeenWord`]=false;u[`players/${id}/clue`]='';u[`players/${id}/isAlive`]=true;u[`players/${id}/hasVoted`]=false;});
+    u.wordPair={civilian:pair[0],spy:pair[1]};u.clueOrder=shuffle(pids);u.currentClueIndex=0;
+    u.status='distribute';u.votes=null;u.eliminated=null;u.winner=null;u.winReason='';u.isTie=false;u.round=1;
+    await db.ref(`rooms/${S.roomCode}`).update(u);
+  }
+  async function fbSeen(){
+    await db.ref(`rooms/${S.roomCode}/players/${S.myId}/hasSeenWord`).set(true);
+    const s=await db.ref(`rooms/${S.roomCode}/players`).once('value');
+    const ps=s.val();
+    if(Object.values(ps).every(p=>p.hasSeenWord))await db.ref(`rooms/${S.roomCode}`).update({status:'clues',currentClueIndex:0});
+  }
+  async function fbClue(clue){
+    const r=S.room;const ao=(r.clueOrder||[]).filter(id=>r.players[id]?.isAlive);const idx=r.currentClueIndex||0;
+    await db.ref(`rooms/${S.roomCode}/players/${S.myId}/clue`).set(clue);
+    if(idx+1>=ao.length)await db.ref(`rooms/${S.roomCode}`).update({status:'clueSummary'});
+    else await db.ref(`rooms/${S.roomCode}/currentClueIndex`).set(idx+1);
+  }
+  async function fbVote(targetId){
+    await db.ref(`rooms/${S.roomCode}/votes/${S.myId}`).set(targetId);
+    await db.ref(`rooms/${S.roomCode}/players/${S.myId}/hasVoted`).set(true);
+    const s=await db.ref(`rooms/${S.roomCode}`).once('value');const r=s.val();
+    const al=aliveList(r.players);
+    if(al.every(([id])=>r.players[id].hasVoted))await resolveVotes(r);
+  }
+  async function resolveVotes(r){
+    const votes=r.votes||{};const al=aliveList(r.players);const t={};
+    al.forEach(([id])=>{t[id]=0;});Object.values(votes).forEach(tid=>{if(t[tid]!==undefined)t[tid]++;});
+    const max=Math.max(...Object.values(t));const tied=Object.entries(t).filter(([,c])=>c===max).map(([id])=>id);
+    const eId=tied[Math.floor(Math.random()*tied.length)];
+    await db.ref(`rooms/${S.roomCode}`).update({eliminated:eId,status:'reveal',isTie:tied.length>1});
+  }
+  async function fbSpyGuess(guess){
+    const r=S.room;const ok=guess.trim().toLowerCase()===r.wordPair.civilian.toLowerCase();
+    if(ok)await db.ref(`rooms/${S.roomCode}`).update({winner:'mata-mata',winReason:`${r.players[r.eliminated].name} berhasil menebak kata warga!`,status:'gameover'});
+    else{toast('❌ Tebakan salah!');setTimeout(fbElim,900);}
+  }
+  async function fbElim(){
+    const r=S.room;const eId=r.eliminated;const u={[`players/${eId}/isAlive`]:false};
+    const fp=JSON.parse(JSON.stringify(r.players));fp[eId].isAlive=false;
+    const al=Object.entries(fp).filter(([,p])=>p.isAlive);const spy=al.filter(([,p])=>p.isSpy);
+    if(spy.length===0){u.winner='warga';u.winReason='Semua mata-mata telah dieliminasi!';u.status='gameover';}
+    else if(al.length<=2){u.winner='mata-mata';u.winReason='Mata-mata berhasil bertahan!';u.status='gameover';}
+    else{
+      const pids=al.map(([id])=>id);
+      pids.forEach(id=>{u[`players/${id}/clue`]='';u[`players/${id}/hasVoted`]=false;});
+      u.clueOrder=shuffle(pids);u.currentClueIndex=0;u.votes=null;u.eliminated=null;u.round=(r.round||1)+1;u.status='clues';
+    }
+    await db.ref(`rooms/${S.roomCode}`).update(u);
+  }
+  async function fbKick(tid){
+    if(!S.isHost||tid===S.myId)return;
+    await db.ref(`rooms/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');
+  }
+  async function fbPlayAgain(){
+    if(!S.isHost)return;
+    const r=S.room,pids=Object.keys(r.players),u={};
+    pids.forEach(id=>{u[`players/${id}/isSpy`]=false;u[`players/${id}/word`]='';u[`players/${id}/clue`]='';u[`players/${id}/isAlive`]=true;u[`players/${id}/hasSeenWord`]=false;u[`players/${id}/hasVoted`]=false;});
+    u.status='lobby';u.round=1;u.winner=null;u.winReason='';u.eliminated=null;u.votes=null;u.wordPair=null;
+    await db.ref(`rooms/${S.roomCode}`).update(u);
+  }
+  function fbStartVoting(){
+    if(!S.isHost)return;
+    const al=aliveList(S.room.players);const u={status:'vote',votes:null};
+    al.forEach(([id])=>{u[`players/${id}/hasVoted`]=false;});
+    db.ref(`rooms/${S.roomCode}`).update(u);
+  }
+
+  // ── ROUTER ───────────────────────────────────────────────────────
+  function renderPhase(){
+    if(S.mode==='offline'){renderOff();return;}
+    const r=S.room;if(!r)return;
+    const p=r.status;
+    if(p==='lobby')return rLobby();
+    if(p==='distribute')return rDist();
+    if(p==='clues')return rClues();
+    if(p==='clueSummary')return rClueSum();
+    if(p==='vote')return rVote();
+    if(p==='reveal')return rReveal();
+    if(p==='gameover')return rGameover();
+  }
+
+  // ── HOME ─────────────────────────────────────────────────────────
+  function rHome(){
+    render(`
+      <div class="page-header" style="margin-top:12px">
+        <div class="eyebrow">🕵️ Who The Spy</div>
+        <h1>Pilih Mode Main</h1>
+      </div>
+
+      <div class="card">
+        <div class="lbl">Nama kamu</div>
+        <input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}"
+          oninput="S.myName=this.value.trim()">
+        <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--text3)">
+          ${FB
+            ?`<span style="color:var(--green)">●</span> Firebase terhubung`
+            :`<span style="color:var(--red)">●</span> Firebase belum dikonfigurasi`}
+        </div>
+      </div>
+
+      ${FB?`
+      <div class="card card-accent">
+        <div class="lbl">🌐 Main Online</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Tiap pemain pakai HP masing-masing, sync real-time</p>
+        <button class="btn btn-primary" onclick="onCreate()">+ Buat Room Baru</button>
+        <div class="sep">atau bergabung</div>
+        <input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+        <button class="btn btn-outline" onclick="onJoin()" style="margin-top:10px">→ Join Room</button>
+      </div>
+      `:''}
+
+      <div class="card">
+        <div class="lbl">📱 Main Offline</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Satu perangkat, giliran lihat kata — cocok kumpul bareng</p>
+        <button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline (Pass & Play)</button>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+        <div style="flex:1;min-width:110px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:20px;margin-bottom:4px">🎭</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500">1 mata-mata (≤7p)<br>2 mata-mata (8-10p)</div>
+        </div>
+        <div style="flex:1;min-width:110px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:20px;margin-bottom:4px">💡</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500">Kasih petunjuk<br>temukan bedanya!</div>
+        </div>
+        <div style="flex:1;min-width:110px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:20px;margin-bottom:4px">🗳️</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:500">Vote & eliminasi<br>tersangka</div>
+        </div>
+      </div>
+    `);
+    setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);
+  }
+
+  async function onCreate(){
+    const n=($('ni')?.value||'').trim()||S.myName;
+    if(!n){toast('Masukkan namamu dulu!');return;}
+    S.myName=n;
+    render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);
+    try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}
+    catch(e){toast('Gagal: '+e.message);rHome();}
+  }
+  async function onJoin(){
+    const n=($('ni')?.value||'').trim()||S.myName;
+    const c=($('ci')?.value||'').toUpperCase().trim();
+    if(!n){toast('Masukkan namamu dulu!');return;}
+    if(c.length!==4){toast('Kode harus 4 huruf!');return;}
+    S.myName=n;
+    render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);
+    try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}
+    catch(e){toast('Gagal: '+e.message);rHome();}
+  }
+  function onOffline(){
+    S.myName=($('ni')?.value||'').trim()||S.myName||'Host';
+    S.mode='offline';rOffSetup();
+  }
+  function leaveRoom(){
+    if(S.unsubFn){S.unsubFn();S.unsubFn=null;}
+    S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();
+  }
+  function copyCode(code){
+    navigator.clipboard?.writeText(code).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+code));
+  }
+
+  // ── LOBBY ────────────────────────────────────────────────────────
+  function rLobby(){
+    const r=S.room,ps=r.players||{};
+    const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+    const pc=pids.length,cs=S.isHost&&pc>=3;
+    render(`
+      <div class="page-header" style="margin-top:8px">
+        <div class="eyebrow">Lobby</div>
+        <h1>Waiting Room</h1>
+        <div class="sub">Tunggu semua teman bergabung</div>
+      </div>
+
+      <div class="card card-teal" style="text-align:center">
+        <div class="lbl" style="color:var(--teal)">Kode Room</div>
+        <div class="rcode">${esc(r.code)}</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Bagikan kode ini ke teman-temanmu</p>
+        <button class="btn btn-ghost btn-sm" onclick="copyCode('${esc(r.code)}')" style="max-width:200px;margin:0 auto;padding:10px 16px">⎘ Salin Kode</button>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="lbl" style="margin-bottom:0">Pemain Bergabung</div>
+          <span class="badge b-acc">${pc}/10</span>
+        </div>
+        ${pids.map(id=>`
+          <div class="pi">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-weight:500">${esc(ps[id].name)}</span>
+              ${id===r.hostId?'<span class="badge b-gld">Host</span>':''}
+              ${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}
+            </div>
+            ${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600;padding:4px 8px;border-radius:6px;transition:background .15s" onmouseover="this.style.background='rgba(248,113,113,.1)'" onmouseout="this.style.background='none'">Kick</button>`:`<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 8px var(--green)"></span>`}
+          </div>`).join('')}
+        ${pc<3?`<p style="font-size:12px;color:var(--text3);margin-top:10px;text-align:center">Butuh ${3-pc} pemain lagi untuk mulai · Spy: ${spyCnt(pc)} orang</p>`:`<p style="font-size:12px;color:var(--green);margin-top:10px;text-align:center">✓ Siap dimulai · Spy: ${spyCnt(pc)} orang</p>`}
+      </div>
+
+      ${S.isHost?`
+        <button class="btn btn-primary" ${cs?'':'disabled'} onclick="fbStart()">▶ Mulai Game · ${pc} Pemain</button>
+      `:`
+        <div class="card" style="text-align:center;padding:20px">
+          <div class="waiting-pulse"><span></span><span></span><span></span></div>
+          <p style="font-size:13px;color:var(--text2);margin-top:10px">Menunggu host memulai...</p>
+        </div>
+      `}
+      <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:4px">← Keluar</button>
+    `);
+  }
+
+  // ── DISTRIBUTE ───────────────────────────────────────────────────
+  function rDist(){
+    const r=S.room,me=r.players[S.myId];
+    if(!me)return;
+    const ps=r.players;
+    render(`
+      <div class="page-header" style="margin-top:8px">
+        <div class="eyebrow">Ronde ${r.round||1} · Lihat Kata</div>
+        <h1>Giliran Kamu</h1>
+        <div class="sub">Lihat kata-mu, jangan kasih tahu siapapun</div>
+      </div>
+
+      <div class="card ${me.hasSeenWord?'card-accent':''}">
+        ${!me.hasSeenWord?`
+          <div style="text-align:center;padding:12px 0">
+            <div style="font-size:48px;margin-bottom:12px">🔒</div>
+            <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Pastikan tidak ada yang melihat layarmu</p>
+            <button class="btn btn-primary" onclick="revealW()" style="max-width:260px;margin:0 auto">👁 Tap untuk Lihat Kata</button>
+          </div>
+        `:`
+          <div id="wb" class="word-box">
+            <div class="lbl">Kata kamu</div>
+            <div class="word">${esc(me.word)}</div>
+          </div>
+          <p style="font-size:13px;color:var(--text2);text-align:center;margin:8px 0 14px">Ingat baik-baik! Kata ini tidak akan muncul lagi.</p>
+          <button class="btn btn-teal" onclick="fbSeen()">✓ Sudah Ingat, Lanjutkan</button>
+        `}
+      </div>
+
+      <div class="card">
+        <div class="lbl">Status Semua Pemain</div>
+        ${Object.entries(ps).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>`
+          <div class="pi ${p.hasSeenWord?'done':''}">
+            <span style="font-weight:500">${esc(p.name)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span>
+            ${p.hasSeenWord
+              ?'<span style="color:var(--green);font-size:12px;font-weight:600">✓ Siap</span>'
+              :'<div class="waiting-pulse" style="gap:3px"><span style="width:4px;height:4px"></span><span style="width:4px;height:4px"></span><span style="width:4px;height:4px"></span></div>'}
+          </div>`).join('')}
+      </div>
+    `);
+  }
+  function revealW(){
+    const me=S.room.players[S.myId];
+    const c=document.querySelector('.card');if(!c)return;
+    c.className='card card-accent';
+    c.innerHTML=`
+      <div id="wb" class="word-box">
+        <div class="lbl">Kata kamu</div>
+        <div class="word">${esc(me.word)}</div>
+      </div>
+      <p style="font-size:13px;color:var(--text2);text-align:center;margin:8px 0 14px">Ingat baik-baik!</p>
+      <button class="btn btn-teal" onclick="fbSeen()">✓ Sudah Ingat, Lanjutkan</button>
+    `;
+  }
+
+  // ── CLUES ────────────────────────────────────────────────────────
+  function rClues(){
+    const r=S.room;
+    const ao=(r.clueOrder||[]).filter(id=>r.players[id]?.isAlive);
+    const idx=r.currentClueIndex||0;const curId=ao[idx];const isMe=curId===S.myId;const ps=r.players;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span style="font-size:12px;color:var(--text2)">${idx+1}/${ao.length} petunjuk</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="page-header">
+        <div class="eyebrow">💡 Fase Petunjuk</div>
+        <h1>${isMe?'Giliran Kamu!':'Menunggu...'}</h1>
+        <div class="sub">1 kata petunjuk tentang kata-mu</div>
+      </div>
+      <div class="card ${isMe?'card-accent':''}">
+        ${isMe?`
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Jangan terlalu jelas, jangan terlalu samar 🤫</p>
+          <input id="ci2" class="inp" placeholder="Tulis petunjukmu..." maxlength="30"
+            onkeydown="if(event.key==='Enter')submitClue()">
+          <button class="btn btn-primary" onclick="submitClue()" style="margin-top:12px">Kirim Petunjuk →</button>
+        `:`
+          <div style="text-align:center;padding:12px">
+            <div style="font-size:36px;margin-bottom:10px">✍️</div>
+            <p style="font-weight:600;font-size:16px;margin-bottom:6px">${esc(ps[curId]?.name||'...')}</p>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:12px">sedang mengetik petunjuk</p>
+            <div class="waiting-pulse"><span></span><span></span><span></span></div>
+          </div>
+        `}
+      </div>
+      <div class="card">
+        <div class="lbl">Urutan Petunjuk</div>
+        ${ao.map((id,i)=>`
+          <div class="pi ${i===idx?'active':''} ${i<idx?'done':''}">
+            <span style="font-weight:${i===idx?'600':'400'}">${esc(ps[id]?.name||id)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span>
+            ${i<idx?`<span style="font-size:14px;font-weight:600;color:var(--accent2);font-style:italic">"${esc(ps[id]?.clue)}"</span>`
+              :i===idx?'<span class="badge b-acc">Giliran</span>'
+              :'<span style="font-size:12px;color:var(--text3)">menunggu</span>'}
+          </div>`).join('')}
+      </div>
+    `);
+    if(isMe)setTimeout(()=>$('ci2')?.focus(),100);
+  }
+  async function submitClue(){
+    const v=($('ci2')?.value||'').trim();
+    if(!v){toast('Tulis petunjukmu dulu!');return;}
+    await fbClue(v);
+  }
+
+  // ── CLUE SUMMARY ─────────────────────────────────────────────────
+  function rClueSum(){
+    const r=S.room;const ao=(r.clueOrder||[]).filter(id=>r.players[id]?.isAlive);const ps=r.players;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span style="font-size:12px;color:var(--text2)">Diskusi</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="page-header">
+        <div class="eyebrow">📋 Semua Petunjuk</div>
+        <h1>Diskusi Dulu!</h1>
+        <div class="sub">Analisa petunjuk sebelum voting</div>
+      </div>
+      <div class="card">
+        <div class="lbl">Ringkasan Petunjuk</div>
+        ${ao.map(id=>`
+          <div class="crow">
+            <span class="cn">${esc(ps[id]?.name)}${id===S.myId?' (kamu)':''}</span>
+            <span class="cv">"${esc(ps[id]?.clue)}"</span>
+          </div>`).join('')}
+      </div>
+      ${S.isHost?`<button class="btn btn-primary" onclick="fbStartVoting()" style="margin-top:4px">🗳 Mulai Voting</button>`
+        :`<div class="card" style="text-align:center;padding:20px"><div class="waiting-pulse"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:10px">Menunggu host memulai voting...</p></div>`}
+    `);
+  }
+
+  // ── VOTE ─────────────────────────────────────────────────────────
+  function rVote(){
+    const r=S.room,me=r.players[S.myId];if(!me)return;
+    const al=aliveList(r.players);const vc=al.filter(([,p])=>p.hasVoted).length;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span style="font-size:12px;color:var(--text2)">Voting</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="page-header">
+        <div class="eyebrow">🗳 Voting</div>
+        <h1>${me.hasVoted?'Vote Terkirim!':'Siapa Mata-Matanya?'}</h1>
+        <div class="sub">Pilih pemain yang paling mencurigakan</div>
+      </div>
+      ${me.hasVoted?`
+        <div class="card card-teal" style="text-align:center;padding:28px">
+          <div style="font-size:40px;margin-bottom:12px">✅</div>
+          <p style="font-weight:600;font-size:15px;margin-bottom:8px;color:var(--green)">Vote berhasil dikirim!</p>
+          <div class="vp"><span>${vc}</span> / ${al.length} sudah vote</div>
+          <div class="dots" style="margin-top:8px">${al.map(([,p])=>`<div class="dot ${p.hasVoted?'dn':'wt'}"></div>`).join('')}</div>
+        </div>
+      `:`
+        <div class="card">
+          <div class="vp"><span>${vc}</span> / ${al.length} sudah vote</div>
+          ${al.filter(([id])=>id!==S.myId).map(([id,p])=>`
+            <div class="pi clickable" onclick="fbVote('${id}')">
+              <span style="font-weight:500">${esc(p.name)}</span>
+              <span style="font-size:12px;color:var(--red);font-weight:600">Pilih →</span>
+            </div>`).join('')}
+        </div>
+      `}
+    `);
+  }
+
+  // ── REVEAL ───────────────────────────────────────────────────────
+  function rReveal(){
+    const r=S.room,eId=r.eliminated,elim=r.players[eId];if(!elim)return;
+    const isSpy=elim.isSpy,isElim=eId===S.myId;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span style="font-size:12px;color:var(--text2)">Hasil</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="page-header">
+        <div class="eyebrow">📢 Hasil Voting</div>
+        <h1>Tereliminasi!</h1>
+      </div>
+      <div class="card ${isSpy?'card-red':'card-green'}" style="text-align:center;padding:28px">
+        ${r.isTie?'<p style="font-size:12px;color:var(--text3);margin-bottom:10px">⚖ Hasil seri, dipilih acak</p>':''}
+        <div style="font-size:48px;margin-bottom:12px">${isSpy?'🕵️':'😇'}</div>
+        <div class="lbl">${isSpy?'Mata-mata ketahuan!':'Warga biasa dieliminasi'}</div>
+        <p style="font-family:\'Syne\',sans-serif;font-size:26px;font-weight:800;margin:8px 0 12px;letter-spacing:-0.5px">${esc(elim.name)}</p>
+        <span class="badge ${isSpy?'b-red':'b-grn'}" style="font-size:12px;padding:6px 14px">${isSpy?'🔴 Mata-Mata':'🟢 Warga Biasa'}</span>
+      </div>
+
+      ${isSpy&&isElim?`
+        <div class="card card-accent">
+          <p style="font-size:14px;color:var(--text2);margin-bottom:14px">Kamu ketahuan! Tebak kata warga untuk menang 🎯</p>
+          <input id="gi" class="inp" placeholder="Tebak kata warga..." onkeydown="if(event.key==='Enter')doGuess()">
+          <button class="btn btn-primary" onclick="doGuess()" style="margin-top:10px">🎯 Tebak Sekarang</button>
+          <button class="btn btn-ghost" onclick="fbElim()" style="margin-top:6px">✗ Menyerah</button>
+        </div>
+      `:isSpy&&!isElim?`
+        <div class="card" style="text-align:center;padding:20px">
+          <div class="waiting-pulse"><span></span><span></span><span></span></div>
+          <p style="font-size:13px;color:var(--text2);margin-top:10px">${esc(elim.name)} sedang mencoba menebak kata warga...</p>
+        </div>
+      `:`
+        <div class="card">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px">${esc(elim.name)} adalah warga biasa. Pencarian berlanjut...</p>
+          ${S.isHost?`<button class="btn btn-primary" onclick="fbElim()">→ Lanjutkan</button>`
+            :`<div style="text-align:center"><div class="waiting-pulse"><span></span><span></span><span></span></div><p style="font-size:12px;color:var(--text3);margin-top:8px">Menunggu host...</p></div>`}
+        </div>
+      `}
+
+      <div class="card" style="margin-top:4px">
+        <div class="lbl">Rekap Vote</div>
+        ${Object.entries(r.votes||{}).map(([vid,tid])=>`
+          <div class="pi">
+            <span style="color:var(--text2)">${esc(r.players[vid]?.name)}</span>
+            <span style="color:var(--text3);font-size:12px">memilih</span>
+            <span style="color:var(--red);font-weight:600">${esc(r.players[tid]?.name)}</span>
+          </div>`).join('')}
+      </div>
+    `);
+    setTimeout(()=>$('gi')?.focus(),100);
+  }
+  async function doGuess(){
+    const v=($('gi')?.value||'').trim();if(!v)return;
+    await fbSpyGuess(v);
+  }
+
+  // ── GAME OVER ─────────────────────────────────────────────────────
+  function rGameover(){
+    const r=S.room,iW=r.winner==='warga',ps=r.players||{};
+    const wc=iW?'var(--green)':'var(--red)';
+    render(`
+      <div class="fade" style="padding-top:16px">
+        <span class="win-icon">${iW?'🎉':'🕵️'}</span>
+        <div class="wtit" style="color:${wc}">${iW?'Warga Menang!':'Mata-Mata Menang!'}</div>
+        <p style="text-align:center;font-size:13px;color:var(--text2);margin:8px 0 24px">${esc(r.winReason)}</p>
+
+        <div class="card card-${iW?'green':'red'}">
+          <div class="lbl">Pasangan Kata Ronde Ini</div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <div class="pair-half" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25)">
+              <div class="plbl" style="color:var(--green)">Warga</div>
+              <div class="pword" style="color:var(--green)">${esc(r.wordPair?.civilian)}</div>
+            </div>
+            <div class="pair-half" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25)">
+              <div class="plbl" style="color:var(--red)">Mata-Mata</div>
+              <div class="pword" style="color:var(--red)">${esc(r.wordPair?.spy)}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="lbl">Identitas Semua Pemain</div>
+          ${Object.entries(ps).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>`
+            <div class="pi" style="${p.isSpy?'border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)':''}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-weight:500;${!p.isAlive?'text-decoration:line-through;opacity:.4':''}">${esc(p.name)}</span>
+                ${p.isSpy?'<span class="badge b-red">Spy</span>':''}
+                ${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}
+              </div>
+              <span style="font-weight:700;color:${p.isSpy?'var(--red)':'var(--accent2)'}">${esc(p.word)}</span>
+            </div>`).join('')}
+        </div>
+
+        ${S.isHost?`<button class="btn btn-primary" onclick="fbPlayAgain()">↺ Main Lagi (Room Sama)</button>`
+          :`<div class="card" style="text-align:center;padding:20px"><div class="waiting-pulse"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:10px">Menunggu host...</p></div>`}
+        <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button>
+      </div>
+    `);
+  }
+
+  // ── OFFLINE MODE ──────────────────────────────────────────────────
+  function rOffSetup(){
+    render(`
+      <div class="page-header" style="margin-top:8px">
+        <div class="eyebrow">📱 Mode Offline</div>
+        <h1>Setup Pemain</h1>
+        <div class="sub">Satu perangkat, giliran melihat kata</div>
+      </div>
+      <div class="card">
+        <div class="lbl">Jumlah Pemain</div>
+        <div class="count-sel">
+          <button class="count-btn" onclick="oChg(-1)">−</button>
+          <div id="ocd" class="count-num">${S.oCount}</div>
+          <button class="count-btn" onclick="oChg(1)">+</button>
+        </div>
+        <div style="font-size:13px;color:var(--text2)">Mata-mata: <span id="ospc" style="color:var(--red);font-weight:700">${spyCnt(S.oCount)}</span> orang</div>
+        <div class="divider"></div>
+        <div class="lbl">Nama Pemain</div>
+        <div id="onl"></div>
+        <button class="btn btn-primary" onclick="oStart()" style="margin-top:16px">▶ Mulai Game</button>
+      </div>
+      <button class="btn btn-ghost" onclick="rHome()">← Kembali</button>
+    `);
+    renderONames();
+  }
+  function oChg(d){
+    S.oCount=Math.max(3,Math.min(10,S.oCount+d));
+    $('ocd').textContent=S.oCount;
+    $('ospc').textContent=spyCnt(S.oCount);
+    renderONames();
+  }
+  function renderONames(){
+    const c=$('onl');if(!c)return;
+    c.innerHTML=Array.from({length:S.oCount},(_,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span>
+        <input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}"
+          oninput="S.oNames[${i}]=this.value.trim()"
+          placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px">
+      </div>`).join('');
+  }
+  function oStart(){
+    const cnt=S.oCount;const names=S.oNames.slice(0,cnt).map((n,i)=>n||`Pemain ${i+1}`);
+    const pair=PAIRS[Math.floor(Math.random()*PAIRS.length)];const sc=spyCnt(cnt);
+    const spies=new Set();while(spies.size<sc)spies.add(Math.floor(Math.random()*cnt));
+    S.oPlayers=names.map((name,i)=>({id:i,name,isSpy:spies.has(i),word:spies.has(i)?pair[1]:pair[0],isAlive:true,clue:''}));
+    S.oPair=pair;S.oDistIdx=0;S.oShowWord=false;S.oClueIdx=0;S.oVoteIdx=0;
+    S.oVoteMap={};S.oElim=null;S.oGuessState='idle';S.oRound=1;S.oPhase='distribute';S.mode='offline';
+    renderOff();
+  }
+  function renderOff(){
+    const ph=S.oPhase;
+    if(ph==='distribute')return rODist();
+    if(ph==='clues')return rOClues();
+    if(ph==='clueSummary')return rOClueSum();
+    if(ph==='vote')return rOVote();
+    if(ph==='reveal')return rOReveal();
+    if(ph==='gameover')return rOGameover();
+  }
+  function oAlive(){return S.oPlayers.filter(p=>p.isAlive);}
+
+  function rODist(){
+    const p=S.oPlayers[S.oDistIdx];
+    render(`
+      <div class="page-header" style="margin-top:8px">
+        <div class="eyebrow">Ronde ${S.oRound} · ${S.oDistIdx+1}/${S.oPlayers.length}</div>
+        <h1>${esc(p.name)}</h1>
+        <div class="sub">Giliran melihat kata</div>
+      </div>
+      <div class="card ${S.oShowWord?'card-accent':''}">
+        ${!S.oShowWord?`
+          <div style="text-align:center;padding:16px 0">
+            <div style="font-size:56px;margin-bottom:14px">🔒</div>
+            <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Pastikan hanya <b>${esc(p.name)}</b> yang melihat layar</p>
+            <button class="btn btn-primary" onclick="oReveal()" style="max-width:260px;margin:0 auto">👁 Tap untuk Lihat Kata</button>
+          </div>
+        `:`
+          <div class="word-box"><div class="lbl">Kata kamu</div><div class="word">${esc(p.word)}</div></div>
+          <p style="font-size:13px;color:var(--text2);text-align:center;margin:8px 0 14px">Ingat baik-baik! Jangan sebut ke siapapun.</p>
+          <button class="btn btn-teal" onclick="oNextDist()">
+            ${S.oDistIdx+1>=S.oPlayers.length?'✓ Semua Sudah Lihat':`→ Serahkan ke ${esc(S.oPlayers[S.oDistIdx+1]?.name)}`}
+          </button>
+        `}
+      </div>
+      <div class="dots">${S.oPlayers.map((_,i)=>`<div class="dot ${i<S.oDistIdx?'dn':i===S.oDistIdx?'cu':'wt'}"></div>`).join('')}</div>
+    `);
+  }
+  function oReveal(){S.oShowWord=true;rODist();}
+  function oNextDist(){
+    if(S.oDistIdx+1>=S.oPlayers.length){S.oPhase='clues';S.oClueIdx=0;rOClues();}
+    else{S.oDistIdx++;S.oShowWord=false;rODist();}
+  }
+
+  function rOClues(){
+    const al=oAlive(),cur=al[S.oClueIdx];
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${S.oRound}</span>
+        <span style="font-size:12px;color:var(--text2)">${S.oClueIdx+1}/${al.length}</span>
+        <span style="font-size:12px;color:var(--text3)">Offline</span>
+      </div>
+      <div class="page-header">
+        <div class="eyebrow">💡 Fase Petunjuk</div>
+        <h1>${esc(cur.name)}</h1>
+        <div class="sub">Giliran memberikan petunjuk</div>
+      </div>
+      <div class="card card-accent">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Berikan 1 kata petunjuk tentang kata-mu 🤫</p>
+        <input id="oci" class="inp" placeholder="Ketik petunjukmu..." maxlength="30"
+          onkeydown="if(event.key==='Enter')oSubmitClue()">
+        <button class="btn btn-primary" onclick="oSubmitClue()" style="margin-top:10px">✓ Konfirmasi Petunjuk</button>
+      </div>
+      <div class="card">
+        <div class="lbl">Urutan Petunjuk</div>
+        ${al.map((p,i)=>`
+          <div class="pi ${i===S.oClueIdx?'active':''} ${i<S.oClueIdx?'done':''}">
+            <span style="font-weight:${i===S.oClueIdx?'600':'400'}">${esc(p.name)}</span>
+            ${i<S.oClueIdx?`<span style="font-size:14px;font-weight:600;color:var(--accent2);font-style:italic">"${esc(p.clue)}"</span>`
+              :i===S.oClueIdx?'<span class="badge b-acc">Giliran</span>'
+              :'<span style="font-size:12px;color:var(--text3)">menunggu</span>'}
+          </div>`).join('')}
+      </div>
+    `);
+    setTimeout(()=>$('oci')?.focus(),100);
+  }
+  function oSubmitClue(){
+    const v=($('oci')?.value||'').trim();if(!v){toast('Tulis petunjukmu!');return;}
+    oAlive()[S.oClueIdx].clue=v;
+    if(S.oClueIdx+1>=oAlive().length){S.oPhase='clueSummary';rOClueSum();}
+    else{S.oClueIdx++;rOClues();}
+  }
+
+  function rOClueSum(){
+    const al=oAlive();
+    render(`
+      <div class="sbar fade"><span class="rnd">Ronde ${S.oRound}</span><span style="font-size:12px;color:var(--text2)">Diskusi</span><span style="font-size:12px;color:var(--text3)">Offline</span></div>
+      <div class="page-header">
+        <div class="eyebrow">📋 Semua Petunjuk</div>
+        <h1>Diskusi Dulu!</h1>
+        <div class="sub">Analisa semua petunjuk sebelum voting</div>
+      </div>
+      <div class="card">
+        <div class="lbl">Ringkasan</div>
+        ${al.map(p=>`<div class="crow"><span class="cn">${esc(p.name)}</span><span class="cv">"${esc(p.clue)}"</span></div>`).join('')}
+      </div>
+      <button class="btn btn-primary" onclick="oStartVote()">🗳 Mulai Voting</button>
+    `);
+  }
+  function oStartVote(){S.oVoteIdx=0;S.oVoteMap={};S.oPhase='vote';rOVote();}
+
+  function rOVote(){
+    const al=oAlive(),voter=al[S.oVoteIdx];
+    render(`
+      <div class="sbar fade"><span class="rnd">Ronde ${S.oRound}</span><span style="font-size:12px;color:var(--text2)">${S.oVoteIdx+1}/${al.length}</span><span style="font-size:12px;color:var(--text3)">Offline</span></div>
+      <div class="page-header">
+        <div class="eyebrow">🗳 Voting</div>
+        <h1>${esc(voter.name)}</h1>
+        <div class="sub">Siapa yang kamu curigai sebagai mata-mata?</div>
+      </div>
+      <div class="card">
+        ${al.filter(p=>p.id!==voter.id).map(p=>`
+          <div class="pi clickable" onclick="oCastVote(${p.id})">
+            <span style="font-weight:500">${esc(p.name)}</span>
+            <span style="font-size:12px;color:var(--red);font-weight:600">Pilih →</span>
+          </div>`).join('')}
+      </div>
+      <div class="dots">${al.map((_,i)=>`<div class="dot ${i<S.oVoteIdx?'dn':i===S.oVoteIdx?'cu':'wt'}"></div>`).join('')}</div>
+    `);
+  }
+  function oCastVote(tid){
+    const al=oAlive(),voter=al[S.oVoteIdx];
+    S.oVoteMap[voter.id]=tid;
+    if(S.oVoteIdx+1>=al.length)oResolve();
+    else{S.oVoteIdx++;rOVote();}
+  }
+  function oResolve(){
+    const al=oAlive(),t={};
+    al.forEach(p=>{t[p.id]=0;});Object.values(S.oVoteMap).forEach(tid=>{if(t[tid]!==undefined)t[tid]++;});
+    const max=Math.max(...Object.values(t));const tied=Object.entries(t).filter(([,c])=>c===max).map(([id])=>parseInt(id));
+    const eId=tied[Math.floor(Math.random()*tied.length)];
+    S.oElim=S.oPlayers.find(p=>p.id===eId);S.oIsTie=tied.length>1;S.oGuessState='idle';
+    S.oPhase='reveal';rOReveal();
+  }
+
+  function rOReveal(){
+    const el=S.oElim,isSpy=el.isSpy;
+    render(`
+      <div class="sbar fade"><span class="rnd">Ronde ${S.oRound}</span><span style="font-size:12px;color:var(--text2)">Hasil</span><span style="font-size:12px;color:var(--text3)">Offline</span></div>
+      <div class="page-header">
+        <div class="eyebrow">📢 Hasil Voting</div>
+        <h1>Tereliminasi!</h1>
+      </div>
+      <div class="card ${isSpy?'card-red':'card-green'}" style="text-align:center;padding:28px">
+        ${S.oIsTie?'<p style="font-size:12px;color:var(--text3);margin-bottom:10px">⚖ Hasil seri, dipilih acak</p>':''}
+        <div style="font-size:48px;margin-bottom:12px">${isSpy?'🕵️':'😇'}</div>
+        <p style="font-family:\'Syne\',sans-serif;font-size:26px;font-weight:800;margin:8px 0 12px">${esc(el.name)}</p>
+        <span class="badge ${isSpy?'b-red':'b-grn'}" style="font-size:12px;padding:6px 14px">${isSpy?'🔴 Mata-Mata':'🟢 Warga Biasa'}</span>
+      </div>
+      ${isSpy&&S.oGuessState==='idle'?`
+        <div class="card card-accent">
+          <p style="font-size:14px;color:var(--text2);margin-bottom:14px"><b>${esc(el.name)}</b> ketahuan! Tebak kata warga untuk menang 🎯</p>
+          <input id="ogi" class="inp" placeholder="Tebak kata warga..." onkeydown="if(event.key==='Enter')oGuess()">
+          <button class="btn btn-primary" onclick="oGuess()" style="margin-top:10px">🎯 Tebak Sekarang</button>
+          <button class="btn btn-ghost" onclick="oElim()" style="margin-top:6px">✗ Menyerah</button>
+        </div>
+      `:S.oGuessState==='correct'?`
+        <div class="card card-green" style="text-align:center;padding:20px">
+          <p style="font-size:20px;font-weight:700;color:var(--green)">✓ Tebakan Benar!</p>
+        </div>
+      `:S.oGuessState==='wrong'?`
+        <div class="card card-red" style="text-align:center;padding:20px">
+          <p style="font-size:18px;font-weight:700;color:var(--red)">✗ Tebakan Salah!</p>
+        </div>
+      `:`
+        <div class="card">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:14px">${esc(el.name)} adalah warga biasa. Pencarian berlanjut...</p>
+          <button class="btn btn-primary" onclick="oElim()">→ Lanjutkan</button>
+        </div>
+      `}
+    `);
+    setTimeout(()=>$('ogi')?.focus(),100);
+  }
+  function oGuess(){
+    const v=($('ogi')?.value||'').trim();if(!v)return;
+    const ok=v.toLowerCase()===S.oPair[0].toLowerCase();
+    S.oGuessState=ok?'correct':'wrong';rOReveal();
+    if(ok){setTimeout(()=>{S.oWinner='mata-mata';S.oWinReason=`${S.oElim.name} berhasil menebak kata warga!`;S.oPhase='gameover';rOGameover();},1500);}
+    else setTimeout(oElim,1500);
+  }
+  function oElim(){
+    const el=S.oElim;
+    S.oPlayers=S.oPlayers.map(p=>p.id===el.id?{...p,isAlive:false}:p);
+    const al=S.oPlayers.filter(p=>p.isAlive),spy=al.filter(p=>p.isSpy);
+    if(spy.length===0){S.oWinner='warga';S.oWinReason='Semua mata-mata telah dieliminasi!';S.oPhase='gameover';rOGameover();}
+    else if(al.length<=2){S.oWinner='mata-mata';S.oWinReason='Mata-mata berhasil bertahan!';S.oPhase='gameover';rOGameover();}
+    else{
+      S.oPlayers=S.oPlayers.map(p=>({...p,clue:''}));
+      S.oClueIdx=0;S.oVoteIdx=0;S.oVoteMap={};S.oElim=null;S.oGuessState='idle';S.oRound++;
+      S.oPhase='clues';rOClues();
+    }
+  }
+  function rOGameover(){
+    S.oPhase='gameover';const iW=S.oWinner==='warga',wc=iW?'var(--green)':'var(--red)';
+    render(`
+      <div class="fade" style="padding-top:16px">
+        <span class="win-icon">${iW?'🎉':'🕵️'}</span>
+        <div class="wtit" style="color:${wc}">${iW?'Warga Menang!':'Mata-Mata Menang!'}</div>
+        <p style="text-align:center;font-size:13px;color:var(--text2);margin:8px 0 24px">${esc(S.oWinReason)}</p>
+        <div class="card">
+          <div class="lbl">Pasangan Kata</div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <div class="pair-half" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25)">
+              <div class="plbl" style="color:var(--green)">Warga</div>
+              <div class="pword" style="color:var(--green)">${esc(S.oPair[0])}</div>
+            </div>
+            <div class="pair-half" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25)">
+              <div class="plbl" style="color:var(--red)">Mata-Mata</div>
+              <div class="pword" style="color:var(--red)">${esc(S.oPair[1])}</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="lbl">Identitas Pemain</div>
+          ${S.oPlayers.map(p=>`
+            <div class="pi" style="${p.isSpy?'border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06)':''}">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-weight:500;${!p.isAlive?'text-decoration:line-through;opacity:.4':''}">${esc(p.name)}</span>
+                ${p.isSpy?'<span class="badge b-red">Spy</span>':''}
+              </div>
+              <span style="font-weight:700;color:${p.isSpy?'var(--red)':'var(--accent2)'}">${esc(p.word)}</span>
+            </div>`).join('')}
+        </div>
+        <button class="btn btn-primary" onclick="oStart()">↺ Main Lagi</button>
+        <button class="btn btn-ghost" onclick="S.mode='online';rHome()" style="margin-top:6px">← Menu Utama</button>
+      </div>
+    `);
+  }
+
+  // ── BOOT ─────────────────────────────────────────────────────────
+  window.onload=()=>rHome();
+  </script>
+</body>
+</html>
