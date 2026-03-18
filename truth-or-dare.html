@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Truth or Dare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{
+      --bg:#0a0a0f;--glass:#ffffff08;--glass2:#ffffff12;
+      --border:#ffffff14;--border2:#ffffff22;
+      --acc:#fbbf24;--acc2:#f59e0b;--red:#f87171;--green:#4ade80;
+      --blue:#60a5fa;--purple:#a78bfa;--pink:#f472b6;
+      --text:#f0f4ff;--text2:#94a3b8;--text3:#475569;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at top right,rgba(251,191,36,.1) 0%,transparent 55%),
+                 radial-gradient(ellipse at bottom left,rgba(244,114,182,.07) 0%,transparent 55%)}
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes cardFlip{0%{transform:rotateY(90deg);opacity:0}100%{transform:rotateY(0);opacity:1}}
+    .fade{animation:fadeUp .3s ease both}
+
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;
+      position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .card-truth{border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.08)}
+    .card-dare{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)}
+    .card-yellow{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+
+    .ph{text-align:center;margin-bottom:20px;padding-top:4px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+      letter-spacing:2.5px;color:var(--acc);text-transform:uppercase;
+      background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.25);
+      border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:15px 20px;margin-top:10px;border:none;border-radius:14px;
+      cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn:active:not(:disabled){transform:scale(.97)}
+    .btn-yellow{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0a0a0f;box-shadow:0 4px 20px rgba(251,191,36,.35)}
+    .btn-truth{background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;box-shadow:0 4px 20px rgba(96,165,250,.3)}
+    .btn-dare{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;box-shadow:0 4px 20px rgba(248,113,113,.3)}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .btn-ghost:hover:not(:disabled){background:var(--glass2)}
+    .btn-green{background:linear-gradient(135deg,var(--green),#16a34a);color:#0a0a0f}
+
+    .inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);
+      border:1.5px solid var(--border2);border-radius:12px;color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--acc)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-yel{background:rgba(251,191,36,.15);color:var(--acc);border:1px solid rgba(251,191,36,.3)}
+    .b-blue{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border)}
+
+    .pi{display:flex;align-items:center;justify-content:space-between;
+      padding:11px 15px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px;transition:all .2s}
+
+    .sbar{display:flex;align-items:center;justify-content:space-between;
+      padding:9px 15px;background:var(--glass);border:1px solid var(--border);
+      border-radius:13px;margin-bottom:14px;font-size:11px;font-weight:500;color:var(--text2)}
+    .sbar .rnd{color:var(--acc);font-weight:700;font-family:'Syne',sans-serif}
+    .sbar .cod{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;
+      background:linear-gradient(135deg,var(--acc),var(--pink));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;
+      background:linear-gradient(135deg,var(--acc),var(--pink));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      text-align:center;letter-spacing:12px;padding:14px 0}
+
+    /* BIG CARD */
+    .big-card{border-radius:22px;padding:28px;text-align:center;margin:14px 0;
+      animation:cardFlip .4s ease both}
+    .big-card .bc-type{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
+    .big-card .bc-player{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:16px}
+    .big-card .bc-q{font-size:17px;font-weight:500;line-height:1.6;color:var(--text)}
+
+    .waiting-pulse{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .waiting-pulse span{width:6px;height:6px;border-radius:50%;background:var(--acc);
+      animation:pulseDot .9s ease-in-out infinite}
+    .waiting-pulse span:nth-child(2){animation-delay:.15s}
+    .waiting-pulse span:nth-child(3){animation-delay:.3s}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(251,191,36,.2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+      background:rgba(15,12,8,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid rgba(251,191,36,.4);border-radius:14px;
+      padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .count-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);
+      background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;
+      background:linear-gradient(135deg,var(--text),var(--acc));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    /* SPIN WHEEL */
+    .spin-area{text-align:center;padding:20px 0}
+    .spin-name{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--acc);
+      margin-bottom:6px;min-height:44px;transition:all .2s}
+    .spin-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+    .spin-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:16px 32px;border:none;border-radius:16px;cursor:pointer;
+      font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+      background:linear-gradient(135deg,var(--acc),var(--pink));color:#0a0a0f;
+      box-shadow:0 4px 24px rgba(251,191,36,.35);transition:transform .2s}
+    .spin-btn:active{transform:scale(.95)}
+
+    /* CHOICE BUTTONS */
+    .choice-row{display:flex;gap:10px;margin-top:10px}
+    .choice-row .btn{flex:1;margin-top:0}
+  </style>
+</head>
+<body>
+  <div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+  <div id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+  // ── QUESTIONS ────────────────────────────────────────────────────
+  const TRUTHS = [
+    "Siapa orang yang paling kamu sukai di ruangan ini?",
+    "Apa kebohongan terbesar yang pernah kamu katakan?",
+    "Kapan terakhir kali kamu menangis dan kenapa?",
+    "Hal paling memalukan apa yang pernah kamu lakukan?",
+    "Siapa yang pernah kamu ghosting dan kenapa?",
+    "Apa hal yang paling kamu sesali dalam hidupmu?",
+    "Pernahkah kamu berbohong kepada sahabat terbaikmu?",
+    "Apa rahasia terbesar yang belum pernah kamu ceritakan?",
+    "Siapa crush pertamamu?",
+    "Apa hal paling konyol yang pernah kamu lakukan karena suka seseorang?",
+    "Pernahkah kamu mencuri sesuatu? Apa itu?",
+    "Hal apa yang paling kamu takutin tapi gak pernah kamu akui?",
+    "Kapan terakhir kali kamu stalking media sosial seseorang?",
+    "Apa aplikasi paling sering kamu pakai dan kenapa itu memalukan?",
+    "Siapa orang yang paling kamu hindari saat ini?",
+    "Pernahkah kamu berpura-pura sakit untuk tidak masuk sekolah/kerja?",
+    "Apa hal terburuk yang pernah kamu pikirkan tentang seseorang di sini?",
+    "Seberapa jauh kamu berbohong di CV/bio sosmed kamu?",
+    "Siapa yang pernah kamu blokir di media sosial?",
+    "Apa hal yang paling ingin kamu ubah dari dirimu sendiri?",
+    "Pernahkah kamu suka sama teman pacar sendiri?",
+    "Apa hal yang paling kamu sembunyikan dari orang tuamu?",
+    "Siapa orang yang paling kamu iri?",
+    "Kapan kamu merasa paling tidak percaya diri?",
+    "Apa kebiasaan buruk yang kamu punya tapi susah berhenti?",
+  ];
+
+  const DARES = [
+    "Lakukan 20 push-up sekarang!",
+    "Telepon seseorang secara acak dan nyanyikan 'Happy Birthday' ke mereka",
+    "Posting foto paling jelek kamu di Instagram story selama 5 menit",
+    "Minta nomor HP orang pertama yang kamu lihat di luar",
+    "Makan 1 sendok makan saus sambal langsung",
+    "Lakukan impression suara hewan selama 30 detik",
+    "Kirim pesan 'aku kangen kamu' ke orang ke-3 di kontakmu tanpa penjelasan",
+    "Biarkan pemain lain memposting apapun di story-mu",
+    "Bicara dengan aksen luar biasa selama 3 ronde ke depan",
+    "Lakukan 10 jumping jack sambil menyanyi",
+    "Tunjukkan 3 foto terakhir di galeri HP-mu ke semua orang",
+    "Buat status WhatsApp random yang ditulis oleh pemain lain",
+    "Minta foto selfie dengan orang asing di luar",
+    "Nyanyikan lagu nasional dengan nada opera",
+    "Biarkan orang di sebelahmu mengirim pesan ke siapapun dari HP-mu",
+    "Lakukan tarian breakdance selama 30 detik",
+    "Panggil pemain di sebelahmu dengan sebutan sayang selama 3 ronde",
+    "Screenshot chat terlama di WA-mu dan tunjukkan ke semua",
+    "Buat video TikTok lucu dan posting sekarang",
+    "Tukar sepatu dengan orang di sebelahmu untuk 2 ronde",
+    "Ceritakan joke terlucu yang kamu tau — kalau gak ada yang ketawa, ulangi",
+    "Lakukan plank selama 1 menit",
+    "Kirim emoji acak ke 5 orang berbeda di kontakmu",
+    "Bicara tanpa menggunakan huruf 'A' selama 2 menit",
+    "Minta foto bareng dengan semua orang dan jadikan profile picture-mu",
+  ];
+
+  // ── STATE ────────────────────────────────────────────────────────
+  const S = {
+    myId: localStorage.getItem('tod_id') || genId(),
+    myName:'', roomCode:'', isHost:false, mode:'online',
+    room:null, unsubFn:null,
+    oPlayers:[], oRound:0, oCurIdx:0,
+    oType:null, oQuestion:null,
+    oCount:4, oNames:Array.from({length:20},(_,i)=>`Pemain ${i+1}`),
+    spinning:false,
+  };
+  localStorage.setItem('tod_id', S.myId);
+
+  let db=null;
+  function initFB(){
+    try{
+      if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;
+      if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+      db=firebase.database(); return true;
+    }catch(e){return false;}
+  }
+  const FB=initFB();
+
+  function genId(){return't'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+  function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+  function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+  function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
+  function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+  function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+  function $(id){return document.getElementById(id);}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+  // ── FIREBASE OPS ─────────────────────────────────────────────────
+  async function fbCreate(name){
+    let code,exists=true;
+    while(exists){code=genCode();const s=await db.ref(`tod_rooms/${code}`).once('value');exists=s.exists()&&s.val().status!=='ended';}
+    const now=Date.now();
+    await db.ref(`tod_rooms/${code}`).set({
+      code,hostId:S.myId,status:'lobby',round:0,
+      currentPlayer:null,type:null,question:null,createdAt:now,
+      players:{[S.myId]:{name,joinedAt:now,score:0}}
+    });
+    return code;
+  }
+  async function fbJoin(code,name){
+    const s=await db.ref(`tod_rooms/${code}`).once('value');
+    if(!s.exists())throw new Error('Room tidak ditemukan');
+    const r=s.val();
+    if(r.status==='ended')throw new Error('Game sudah berakhir');
+    if(Object.keys(r.players||{}).length>=20)throw new Error('Room penuh');
+    if(r.players&&r.players[S.myId]){await db.ref(`tod_rooms/${code}/players/${S.myId}/name`).set(name);return r;}
+    await db.ref(`tod_rooms/${code}/players/${S.myId}`).set({name,joinedAt:Date.now(),score:0});
+    return r;
+  }
+  function fbListen(code){
+    if(S.unsubFn)S.unsubFn();
+    const ref=db.ref(`tod_rooms/${code}`);
+    const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});
+    S.unsubFn=()=>ref.off('value',h);
+  }
+  async function fbStartGame(){
+    const r=S.room,pids=Object.keys(r.players);
+    if(pids.length<2){toast('Minimal 2 pemain!');return;}
+    const first=pids[Math.floor(Math.random()*pids.length)];
+    await db.ref(`tod_rooms/${S.roomCode}`).update({status:'spin',round:1,currentPlayer:first,type:null,question:null});
+  }
+  async function fbSpin(targetId){
+    // Host picks or random
+    const r=S.room;const pids=Object.keys(r.players);
+    const picked=targetId||pids[Math.floor(Math.random()*pids.length)];
+    await db.ref(`tod_rooms/${S.roomCode}`).update({currentPlayer:picked,status:'choose'});
+  }
+  async function fbChoose(type){
+    const q=type==='truth'?rand(TRUTHS):rand(DARES);
+    const r=S.room;
+    await db.ref(`tod_rooms/${S.roomCode}`).update({type,question:q,status:'question',round:(r.round||0)+1});
+  }
+  async function fbNext(){
+    // Pick next player (sequential or random)
+    const r=S.room;const pids=Object.keys(r.players);
+    const cur=r.currentPlayer;const idx=pids.indexOf(cur);
+    const next=pids[(idx+1)%pids.length];
+    await db.ref(`tod_rooms/${S.roomCode}`).update({currentPlayer:next,type:null,question:null,status:'spin'});
+  }
+  async function fbKick(tid){
+    if(!S.isHost||tid===S.myId)return;
+    await db.ref(`tod_rooms/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');
+  }
+  async function fbEndGame(){
+    await db.ref(`tod_rooms/${S.roomCode}`).update({status:'ended'});
+  }
+
+  // ── ROUTER ───────────────────────────────────────────────────────
+  function renderPhase(){
+    if(S.mode==='offline'){renderOff();return;}
+    const r=S.room;if(!r)return;
+    const p=r.status;
+    if(p==='lobby')return rLobby();
+    if(p==='spin')return rSpin();
+    if(p==='choose')return rChoose();
+    if(p==='question')return rQuestion();
+    if(p==='ended')return rEnded();
+  }
+
+  // ── HOME ─────────────────────────────────────────────────────────
+  function rHome(){
+    render(`
+      <div class="ph" style="margin-top:8px">
+        <div class="ey">🎲 Truth or Dare</div>
+        <h1>Pilih Mode Main</h1>
+      </div>
+      <div class="card">
+        <div class="lbl">Nama kamu</div>
+        <input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}"
+          oninput="S.myName=this.value.trim()">
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">
+          ${FB?'<span style="color:var(--green)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi</span>'}
+        </div>
+      </div>
+      ${FB?`
+      <div class="card card-yellow">
+        <div class="lbl">🌐 Online Multiplayer</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Tiap pemain pakai HP masing-masing</p>
+        <button class="btn btn-yellow" onclick="onCreate()">+ Buat Room Baru</button>
+        <div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div>
+        <input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+        <button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button>
+      </div>`:''}
+      <div class="card">
+        <div class="lbl">📱 Offline (Pass & Play)</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Satu perangkat, giliran berputar</p>
+        <button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline</button>
+      </div>
+      <button class="btn btn-ghost" onclick="showToDGuide()" style="margin-top:4px">📖 Cara Main</button>
+      <button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:6px">← Kembali ke Hub</button>
+    `);
+    setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);
+  }
+
+  async function onCreate(){
+    const n=($('ni')?.value||'').trim()||S.myName;
+    if(!n){toast('Masukkan namamu!');return;}
+    S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);
+    try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}
+    catch(e){toast('Gagal: '+e.message);rHome();}
+  }
+  async function onJoin(){
+    const n=($('ni')?.value||'').trim()||S.myName;
+    const c=($('ci')?.value||'').toUpperCase().trim();
+    if(!n){toast('Masukkan namamu!');return;}
+    if(c.length!==4){toast('Kode harus 4 huruf!');return;}
+    S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);
+    try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}
+    catch(e){toast('Gagal: '+e.message);rHome();}
+  }
+  function onOffline(){S.myName=($('ni')?.value||'').trim()||S.myName||'Host';S.mode='offline';rOffSetup();}
+  function leaveRoom(){if(S.unsubFn){S.unsubFn();S.unsubFn=null;}S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();}
+  function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+  // ── LOBBY ─────────────────────────────────────────────────────────
+  function rLobby(){
+    const r=S.room,ps=r.players||{};
+    const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+    render(`
+      <div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>Waiting Room</h1></div>
+      <div class="card" style="text-align:center">
+        <div class="lbl">Kode Room</div>
+        <div class="rcode">${esc(r.code)}</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Bagikan ke teman-temanmu</p>
+        <button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="lbl" style="margin:0">Pemain</div>
+          <span class="badge b-yel">${pids.length}/20</span>
+        </div>
+        ${pids.map(id=>`
+          <div class="pi">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="font-weight:500">${esc(ps[id].name)}</span>
+              ${id===r.hostId?'<span class="badge b-yel">Host</span>':''}
+              ${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}
+            </div>
+            ${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600">Kick</button>`:'<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>'}
+          </div>`).join('')}
+      </div>
+      ${S.isHost
+        ?`<button class="btn btn-yellow" onclick="fbStartGame()" ${pids.length>=2?'':'disabled'}>▶ Mulai Game · ${pids.length} Pemain</button>`
+        :`<div class="card" style="text-align:center;padding:20px"><div class="waiting-pulse"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host memulai...</p></div>`}
+      <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>
+    `);
+  }
+
+  // ── SPIN ─────────────────────────────────────────────────────────
+  function rSpin(){
+    const r=S.room,ps=r.players||{};
+    const cur=r.currentPlayer;const curName=ps[cur]?.name||'?';
+    const isMe=cur===S.myId;const isHost=S.isHost;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="ph"><div class="ey">🎲 Giliran</div><h1>${esc(curName)}</h1><div class="sub">Pilih pemain atau spin acak</div></div>
+      ${isHost?`
+        <div class="card">
+          <div class="spin-area">
+            <button class="spin-btn" onclick="spinRandom()">🎲 Spin Acak!</button>
+          </div>
+          <div class="divider"></div>
+          <div class="lbl">Atau pilih langsung</div>
+          ${Object.entries(ps).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>`
+            <div class="pi" style="cursor:pointer;${id===cur?'border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)':''}" onclick="fbSpin('${id}')">
+              <span style="font-weight:500">${esc(p.name)}</span>
+              ${id===cur?'<span class="badge b-yel">Giliran</span>':'<span style="font-size:12px;color:var(--text3)">Pilih →</span>'}
+            </div>`).join('')}
+        </div>
+      `:`
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:48px;margin-bottom:12px">🎲</div>
+          <p style="font-weight:600;font-size:16px;color:var(--acc)">${esc(curName)}</p>
+          <p style="font-size:13px;color:var(--text2);margin-top:6px">Sedang memilih target...</p>
+          <div class="waiting-pulse" style="margin-top:12px"><span></span><span></span><span></span></div>
+        </div>
+      `}
+    `);
+  }
+
+  let spinInterval=null;
+  function spinRandom(){
+    const r=S.room;const pids=Object.keys(r.players);
+    const btn=document.querySelector('.spin-btn');
+    if(btn)btn.disabled=true;
+    let count=0;const max=15;
+    spinInterval=setInterval(()=>{
+      const rand=pids[Math.floor(Math.random()*pids.length)];
+      const name=r.players[rand]?.name;
+      document.querySelector('.spin-btn').textContent='🎲 '+name+'...';
+      count++;
+      if(count>=max){
+        clearInterval(spinInterval);
+        fbSpin(rand);
+      }
+    },100);
+  }
+
+  // ── CHOOSE ───────────────────────────────────────────────────────
+  function rChoose(){
+    const r=S.room,ps=r.players||{};
+    const cur=r.currentPlayer;const curName=ps[cur]?.name||'?';
+    const isMe=cur===S.myId;
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="ph"><div class="ey">Pilih</div><h1>${esc(curName)}</h1><div class="sub">Truth atau Dare?</div></div>
+      ${isMe?`
+        <div class="card" style="text-align:center;padding:24px">
+          <p style="font-size:15px;font-weight:600;margin-bottom:20px">Pilih tantanganmu, <b style="color:var(--acc)">${esc(curName)}</b>!</p>
+          <div class="choice-row">
+            <button class="btn btn-truth" onclick="fbChoose('truth')" style="margin-top:0;flex-direction:column;padding:20px 10px;gap:4px">
+              <span style="font-size:24px">💬</span>
+              <span>TRUTH</span>
+              <span style="font-size:11px;opacity:.7;font-weight:400">Jawab jujur</span>
+            </button>
+            <button class="btn btn-dare" onclick="fbChoose('dare')" style="margin-top:0;flex-direction:column;padding:20px 10px;gap:4px">
+              <span style="font-size:24px">🔥</span>
+              <span>DARE</span>
+              <span style="font-size:11px;opacity:.7;font-weight:400">Lakukan tantangan</span>
+            </button>
+          </div>
+        </div>
+      `:`
+        <div class="card" style="text-align:center;padding:28px">
+          <div style="font-size:48px;margin-bottom:12px">🤔</div>
+          <p style="font-weight:600;color:var(--acc);font-size:16px">${esc(curName)}</p>
+          <p style="font-size:13px;color:var(--text2);margin-top:6px">sedang memilih Truth atau Dare...</p>
+          <div class="waiting-pulse" style="margin-top:12px"><span></span><span></span><span></span></div>
+        </div>
+      `}
+    `);
+  }
+
+  // ── QUESTION ─────────────────────────────────────────────────────
+  function rQuestion(){
+    const r=S.room,ps=r.players||{};
+    const cur=r.currentPlayer;const curName=ps[cur]?.name||'?';
+    const isTruth=r.type==='truth';
+    render(`
+      <div class="sbar fade">
+        <span class="rnd">Ronde ${r.round||1}</span>
+        <span class="cod">${esc(r.code)}</span>
+      </div>
+      <div class="ph">
+        <div class="ey">${isTruth?'💬 Truth':'🔥 Dare'}</div>
+        <h1>${esc(curName)}</h1>
+      </div>
+      <div class="big-card ${isTruth?'card-truth':'card-dare'}">
+        <div class="bc-type" style="color:${isTruth?'var(--blue)':'var(--red)'}">
+          ${isTruth?'💬 TRUTH':'🔥 DARE'}
+        </div>
+        <div class="bc-q">${esc(r.question)}</div>
+      </div>
+      ${S.isHost?`
+        <button class="btn btn-yellow" onclick="fbNext()" style="margin-top:6px">✓ Selesai, Giliran Berikutnya →</button>
+        <button class="btn btn-ghost" onclick="fbChoose('${r.type}')" style="margin-top:6px">🔄 Ganti Pertanyaan</button>
+      `:`
+        <div class="card" style="text-align:center;padding:16px">
+          <div class="waiting-pulse"><span></span><span></span><span></span></div>
+          <p style="font-size:12px;color:var(--text2);margin-top:8px">Menunggu host melanjutkan...</p>
+        </div>
+      `}
+      <div class="card" style="margin-top:4px;padding:14px">
+        <div class="lbl">Urutan Pemain</div>
+        ${Object.entries(ps).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>`
+          <div class="pi" style="${id===cur?'border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)':''}">
+            <span style="font-weight:${id===cur?'600':'400'}">${esc(p.name)}</span>
+            ${id===cur?'<span class="badge b-yel">Giliran</span>':''}
+            ${id===S.myId&&id!==cur?'<span class="badge b-dim">Kamu</span>':''}
+          </div>`).join('')}
+      </div>
+    `);
+  }
+
+  // ── ENDED ─────────────────────────────────────────────────────────
+  function rEnded(){
+    render(`
+      <div style="padding-top:20px;animation:fadeUp .4s ease both;text-align:center">
+        <div style="font-size:60px;margin-bottom:12px">🎉</div>
+        <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--acc)">Game Selesai!</div>
+        <p style="font-size:13px;color:var(--text2);margin:8px 0 24px">Terima kasih sudah bermain bersama!</p>
+        ${S.isHost?`<button class="btn btn-yellow" onclick="fbStartGame()">↺ Main Lagi</button>`
+          :`<div class="card" style="padding:18px"><div class="waiting-pulse"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host...</p></div>`}
+        <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button>
+      </div>
+    `);
+  }
+
+  // ── OFFLINE MODE ─────────────────────────────────────────────────
+  function rOffSetup(){
+    render(`
+      <div class="ph" style="margin-top:6px"><div class="ey">Offline</div><h1>Setup Pemain</h1></div>
+      <div class="card">
+        <div class="lbl">Jumlah Pemain</div>
+        <div class="count-sel">
+          <button class="count-btn" onclick="oChg(-1)">−</button>
+          <div id="ocd" class="count-num">${S.oCount}</div>
+          <button class="count-btn" onclick="oChg(1)">+</button>
+        </div>
+        <div class="divider"></div>
+        <div class="lbl">Nama Pemain</div>
+        <div id="onl"></div>
+        <button class="btn btn-yellow" onclick="oStart()" style="margin-top:14px">▶ Mulai Game</button>
+      </div>
+      <button class="btn btn-ghost" onclick="rHome()">← Kembali</button>
+    `);
+    renderONames();
+  }
+  function oChg(d){S.oCount=Math.max(2,Math.min(20,S.oCount+d));$('ocd').textContent=S.oCount;renderONames();}
+  function renderONames(){
+    const c=$('onl');if(!c)return;
+    c.innerHTML=Array.from({length:S.oCount},(_,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span>
+        <input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}"
+          oninput="S.oNames[${i}]=this.value.trim()" placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px">
+      </div>`).join('');
+  }
+  function oStart(){
+    const names=S.oNames.slice(0,S.oCount).map((n,i)=>n||`Pemain ${i+1}`);
+    S.oPlayers=names.map((name,i)=>({id:i,name}));
+    S.oCurIdx=0;S.oRound=0;S.oType=null;S.oQuestion=null;S.oPhase='spin';
+    renderOff();
+  }
+  function renderOff(){
+    const ph=S.oPhase;
+    if(ph==='spin')return rOSpin();
+    if(ph==='choose')return rOChoose();
+    if(ph==='question')return rOQuestion();
+  }
+
+  function rOSpin(){
+    S.oRound++;
+    const cur=S.oPlayers[S.oCurIdx];
+    render(`
+      <div class="ph" style="margin-top:6px"><div class="ey">🎲 Giliran</div><h1>${esc(cur.name)}</h1></div>
+      <div class="card">
+        <div class="spin-area">
+          <div id="spinName" class="spin-name">${esc(cur.name)}</div>
+          <p class="spin-sub">Tap spin untuk pilih acak, atau pilih langsung</p>
+          <button class="spin-btn" onclick="oSpinAnim()">🎲 Spin!</button>
+        </div>
+        <div class="divider"></div>
+        <div class="lbl">Pilih Langsung</div>
+        ${S.oPlayers.map((p,i)=>`
+          <div class="pi" style="cursor:pointer;${i===S.oCurIdx?'border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)':''}" onclick="oPick(${i})">
+            <span style="font-weight:500">${esc(p.name)}</span>
+            ${i===S.oCurIdx?'<span class="badge b-yel">Giliran</span>':'<span style="font-size:12px;color:var(--text3)">Pilih →</span>'}
+          </div>`).join('')}
+      </div>
+    `);
+  }
+
+  function oSpinAnim(){
+    const btn=document.querySelector('.spin-btn');
+    const nameEl=document.getElementById('spinName');
+    if(!btn||!nameEl)return;
+    btn.disabled=true;let count=0;const max=15;
+    const iv=setInterval(()=>{
+      const r=S.oPlayers[Math.floor(Math.random()*S.oPlayers.length)];
+      nameEl.textContent=r.name;count++;
+      if(count>=max){clearInterval(iv);const final=Math.floor(Math.random()*S.oPlayers.length);nameEl.textContent=S.oPlayers[final].name;setTimeout(()=>oPick(final),500);}
+    },100);
+  }
+
+  function oPick(idx){
+    S.oCurIdx=idx;S.oPhase='choose';renderOff();
+  }
+
+  function rOChoose(){
+    const cur=S.oPlayers[S.oCurIdx];
+    render(`
+      <div class="ph"><div class="ey">Pilih</div><h1>${esc(cur.name)}</h1><div class="sub">Truth atau Dare?</div></div>
+      <div class="card" style="text-align:center;padding:24px">
+        <p style="font-size:15px;font-weight:600;margin-bottom:20px">Pilih tantanganmu, <b style="color:var(--acc)">${esc(cur.name)}</b>!</p>
+        <div class="choice-row">
+          <button class="btn btn-truth" onclick="oPick2('truth')" style="margin-top:0;flex-direction:column;padding:20px 10px;gap:4px">
+            <span style="font-size:24px">💬</span><span>TRUTH</span>
+            <span style="font-size:11px;opacity:.7;font-weight:400">Jawab jujur</span>
+          </button>
+          <button class="btn btn-dare" onclick="oPick2('dare')" style="margin-top:0;flex-direction:column;padding:20px 10px;gap:4px">
+            <span style="font-size:24px">🔥</span><span>DARE</span>
+            <span style="font-size:11px;opacity:.7;font-weight:400">Lakukan tantangan</span>
+          </button>
+        </div>
+      </div>
+    `);
+  }
+  function oPick2(type){S.oType=type;S.oQuestion=rand(type==='truth'?TRUTHS:DARES);S.oPhase='question';renderOff();}
+
+  function rOQuestion(){
+    const cur=S.oPlayers[S.oCurIdx];const isTruth=S.oType==='truth';
+    render(`
+      <div class="ph"><div class="ey">${isTruth?'💬 Truth':'🔥 Dare'}</div><h1>${esc(cur.name)}</h1></div>
+      <div class="big-card ${isTruth?'card-truth':'card-dare'}">
+        <div class="bc-type" style="color:${isTruth?'var(--blue)':'var(--red)'}">
+          ${isTruth?'💬 TRUTH':'🔥 DARE'}
+        </div>
+        <div class="bc-q">${esc(S.oQuestion)}</div>
+      </div>
+      <button class="btn btn-yellow" onclick="oNext()">✓ Selesai, Giliran Berikutnya →</button>
+      <button class="btn btn-ghost" onclick="oPick2('${S.oType}')">🔄 Ganti Pertanyaan</button>
+    `);
+  }
+  function oNext(){
+    S.oCurIdx=(S.oCurIdx+1)%S.oPlayers.length;S.oPhase='spin';renderOff();
+  }
+
+  window.onload=()=>rHome();
+  function showToDGuide(){document.getElementById("tod-guide").style.display="block";}
+  </script>
+
+  <div id="tod-guide" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);overflow-y:auto;padding:24px 16px 48px">
+    <button onclick="document.getElementById('tod-guide').style.display='none'" style="position:fixed;top:20px;right:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#f0f4ff;cursor:pointer;z-index:201">✕ Tutup</button>
+    <div style="max-width:460px;margin:0 auto;padding-top:20px">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:48px;margin-bottom:8px">🎲</div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fbbf24">Cara Main Truth or Dare</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:12px">🎯 Cara Main</div>
+        <div style="margin-bottom:8px;display:flex;gap:10px"><span style="color:#fbbf24;font-weight:700;font-family:'Syne',sans-serif">1</span><span style="font-size:13px;color:#94a3b8">Spin atau pilih siapa yang dapat giliran</span></div>
+        <div style="margin-bottom:8px;display:flex;gap:10px"><span style="color:#fbbf24;font-weight:700;font-family:'Syne',sans-serif">2</span><span style="font-size:13px;color:#94a3b8">Pemain pilih <b style='color:#60a5fa'>Truth</b> atau <b style='color:#f87171'>Dare</b></span></div>
+        <div style="margin-bottom:8px;display:flex;gap:10px"><span style="color:#fbbf24;font-weight:700;font-family:'Syne',sans-serif">3</span><span style="font-size:13px;color:#94a3b8"><b style='color:#60a5fa'>Truth</b> = Jawab pertanyaan dengan jujur</span></div>
+        <div style="display:flex;gap:10px"><span style="color:#fbbf24;font-weight:700;font-family:'Syne',sans-serif">4</span><span style="font-size:13px;color:#94a3b8"><b style='color:#f87171'>Dare</b> = Lakukan tantangan yang muncul</span></div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:10px">💡 Tips</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.7">Tidak ada menang/kalah — ini game seru-seruan! Kalau nggak mau jawab Truth atau nggak mau ngelakuin Dare, kena hukuman dari teman-teman 😄. Host bisa ganti pertanyaan jika terlalu ekstrem.</p>
+      </div>
+      <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#60a5fa;font-weight:600;margin-bottom:6px">💬 Truth</div>
+        <p style="font-size:12px;color:#94a3b8">25 pertanyaan jujur tentang kehidupan, crush, rahasia, kebiasaan, dan hal memalukan 😳</p>
+      </div>
+      <div style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:16px;padding:16px">
+        <div style="font-size:13px;color:#f87171;font-weight:600;margin-bottom:6px">🔥 Dare</div>
+        <p style="font-size:12px;color:#94a3b8">25 tantangan seru mulai dari posting foto, telepon random, aksi fisik, sampai kirim pesan ke orang lain 😂</p>
+      </div>
+      <button onclick="document.getElementById('tod-guide').style.display='none'" style="display:block;width:100%;padding:15px;margin-top:16px;border:none;border-radius:14px;cursor:pointer;font-size:14px;font-weight:600;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0a0f">✓ Siap Main!</button>
+    </div>
+  </div>
+</body>
+</html>

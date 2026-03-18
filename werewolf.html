@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Mafia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{
+      --bg:#09080f;--glass:#ffffff08;--glass2:#ffffff12;
+      --border:#ffffff14;--border2:#ffffff22;
+      --red:#f87171;--orange:#fb923c;--green:#4ade80;
+      --blue:#60a5fa;--purple:#a78bfa;--yellow:#fbbf24;--pink:#f472b6;
+      --text:#f0f4ff;--text2:#94a3b8;--text3:#475569;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at top left,rgba(248,113,113,.1) 0%,transparent 55%),
+                 radial-gradient(ellipse at bottom right,rgba(251,146,60,.07) 0%,transparent 55%)}
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+    @keyframes iconBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    .fade{animation:fadeUp .3s ease both}
+
+    /* ── GUIDE OVERLAY ── */
+    #guide{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);
+      backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+      display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:24px 16px 48px}
+    #guide.open{display:flex}
+    .guide-inner{width:100%;max-width:460px}
+    .guide-close{position:fixed;top:20px;right:20px;background:var(--glass2);border:1px solid var(--border2);
+      border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text);
+      cursor:pointer;z-index:201}
+
+    /* ── CARDS ── */
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;
+      position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .c-red{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.07)}
+    .c-grn{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.07)}
+    .c-blue{border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.07)}
+    .c-pur{border-color:rgba(167,139,250,.35);background:rgba(167,139,250,.07)}
+    .c-ora{border-color:rgba(251,146,60,.35);background:rgba(251,146,60,.07)}
+    .c-yel{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.07)}
+    .c-pink{border-color:rgba(244,114,182,.35);background:rgba(244,114,182,.07)}
+
+    /* ── LAYOUT ── */
+    .ph{text-align:center;margin-bottom:20px;padding-top:4px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+      letter-spacing:2.5px;color:var(--orange);text-transform:uppercase;
+      background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.25);
+      border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+
+    /* ── BUTTONS ── */
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:15px 20px;margin-top:10px;border:none;border-radius:14px;
+      cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn:active:not(:disabled){transform:scale(.97)}
+    .btn-red{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;box-shadow:0 4px 20px rgba(248,113,113,.3)}
+    .btn-green{background:linear-gradient(135deg,var(--green),#16a34a);color:#0a0a0f}
+    .btn-blue{background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff}
+    .btn-ora{background:linear-gradient(135deg,var(--orange),#ea580c);color:#fff;box-shadow:0 4px 20px rgba(251,146,60,.3)}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .btn-ghost:hover:not(:disabled){background:var(--glass2)}
+
+    /* ── INPUT ── */
+    .inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);
+      border:1.5px solid var(--border2);border-radius:12px;color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--orange)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;
+      text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+
+    /* ── BADGE ── */
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;
+      font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-blue{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+    .b-pur{background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.3)}
+    .b-ora{background:rgba(251,146,60,.15);color:var(--orange);border:1px solid rgba(251,146,60,.3)}
+    .b-yel{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+    .b-pink{background:rgba(244,114,182,.15);color:var(--pink);border:1px solid rgba(244,114,182,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border)}
+
+    /* ── PLAYER ITEM ── */
+    .pi{display:flex;align-items:center;justify-content:space-between;
+      padding:11px 15px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px;transition:all .2s}
+    .pi.dead{opacity:.4}
+    .pi.clk{cursor:pointer}.pi.clk:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);transform:translateX(2px)}
+    .pi.sel{background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.4)}
+
+    /* ── STATUS BAR ── */
+    .sbar{display:flex;align-items:center;justify-content:space-between;
+      padding:9px 15px;background:var(--glass);border:1px solid var(--border);
+      border-radius:13px;margin-bottom:14px;font-size:11px;font-weight:500;color:var(--text2)}
+    .sbar .phase{color:var(--orange);font-weight:700;font-family:'Syne',sans-serif}
+    .sbar .cod{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;
+      background:linear-gradient(135deg,var(--orange),var(--red));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    /* ── ROOM CODE ── */
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;
+      background:linear-gradient(135deg,var(--orange),var(--red));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      text-align:center;letter-spacing:12px;padding:14px 0}
+
+    /* ── ROLE BOX ── */
+    .role-box{border-radius:18px;padding:24px;text-align:center;margin:14px 0}
+    .role-box .ri{font-size:56px;display:block;margin-bottom:10px;animation:iconBounce 2s ease-in-out infinite}
+    .role-box .rn{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.3px}
+    .role-box .rd{font-size:13px;margin-top:8px;opacity:.8;line-height:1.6}
+    .role-box .rt{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.7}
+
+    /* ── NIGHT BOX ── */
+    .night-box{background:rgba(0,0,10,.5);border:1.5px solid rgba(96,165,250,.15);
+      border-radius:18px;padding:20px;text-align:center;margin:14px 0}
+
+    /* ── DOTS ── */
+    .dots{display:flex;justify-content:center;gap:6px;margin-top:14px}
+    .dot{height:6px;border-radius:3px;transition:all .3s;background:var(--text3);opacity:.4}
+    .dot.dn{background:var(--green);width:6px;opacity:1}
+    .dot.cu{background:var(--orange);width:22px;opacity:1}
+    .dot.wt{width:6px}
+
+    /* ── WAITING ── */
+    .wp{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .wp span{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:pulseDot .9s ease-in-out infinite}
+    .wp span:nth-child(2){animation-delay:.15s}.wp span:nth-child(3){animation-delay:.3s}
+
+    /* ── LOADER ── */
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(248,113,113,.2);border-top-color:var(--red);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+      background:rgba(15,10,20,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid rgba(248,113,113,.4);border-radius:14px;
+      padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .count-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);
+      background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;
+      background:linear-gradient(135deg,var(--text),var(--orange));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    /* ── ROLE DIST GRID ── */
+    .rdist{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+    .rdist-item{background:rgba(255,255,255,.04);border:1px solid var(--border);
+      border-radius:10px;padding:10px 6px;text-align:center;font-size:11px;color:var(--text2)}
+    .rdist-item .ri2{font-size:20px;display:block;margin-bottom:3px}
+    .rdist-item .rc{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+
+    /* GUIDE STYLES */
+    .guide-section{margin-bottom:20px}
+    .guide-section h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:12px;color:var(--orange)}
+    .guide-role{display:flex;align-items:flex-start;gap:12px;padding:12px;
+      background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
+    .guide-role .gr-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+    .guide-role .gr-name{font-weight:700;font-size:14px;margin-bottom:3px}
+    .guide-role .gr-desc{font-size:12px;color:var(--text2);line-height:1.5}
+    .guide-step{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;
+      background:rgba(255,255,255,.04);border-radius:10px;margin-bottom:6px}
+    .guide-step .gs-num{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--orange);flex-shrink:0;width:24px}
+    .guide-step .gs-text{font-size:13px;color:var(--text2);line-height:1.5}
+    .guide-dist-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+    .guide-dist-table th{background:rgba(255,255,255,.06);padding:8px;text-align:center;font-size:10px;letter-spacing:1px;color:var(--text3)}
+    .guide-dist-table td{padding:8px;text-align:center;border-bottom:1px solid var(--border)}
+    .guide-dist-table tr:last-child td{border-bottom:none}
+  </style>
+</head>
+<body>
+
+<!-- GUIDE OVERLAY -->
+<div id="guide">
+  <button class="guide-close" onclick="closeGuide()">✕ Tutup</button>
+  <div class="guide-inner fade">
+    <div style="text-align:center;margin-bottom:24px;padding-top:20px">
+      <div style="font-size:48px;margin-bottom:8px">🔪</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--red)">Cara Main Mafia</div>
+      <p style="font-size:13px;color:var(--text2);margin-top:6px">Panduan lengkap untuk semua peran</p>
+    </div>
+
+    <!-- ALUR GAME -->
+    <div class="guide-section">
+      <h2>🧩 Alur Game</h2>
+      <div class="guide-step"><span class="gs-num">1</span><div class="gs-text"><b style="color:var(--text)">Malam 🌙</b><br>Semua tutup mata. Setiap role menjalankan aksi diam-diam sesuai urutan (Mafia → Serial Killer → Bodyguard → Dokter → Detektif)</div></div>
+      <div class="guide-step"><span class="gs-num">2</span><div class="gs-text"><b style="color:var(--text)">Pagi 🌞</b><br>Moderator umumkan siapa yang mati. Semua diskusi & saling tuduh!</div></div>
+      <div class="guide-step"><span class="gs-num">3</span><div class="gs-text"><b style="color:var(--text)">Voting 🗳️</b><br>Pilih 1 orang untuk dihukum. Perannya diungkap setelah dieliminasi.</div></div>
+      <div class="guide-step"><span class="gs-num">4</span><div class="gs-text"><b style="color:var(--text)">Ulangi</b><br>Sampai ada pihak yang menang!</div></div>
+    </div>
+
+    <!-- KONDISI MENANG -->
+    <div class="guide-section">
+      <h2>🏆 Kondisi Menang</h2>
+      <div class="guide-role">
+        <span class="gr-icon">👤</span>
+        <div><div class="gr-name" style="color:var(--green)">Warga Menang</div><div class="gr-desc">Semua Mafia dan Serial Killer sudah dieliminasi</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🔪</span>
+        <div><div class="gr-name" style="color:var(--red)">Mafia Menang</div><div class="gr-desc">Jumlah Mafia ≥ jumlah warga yang tersisa</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">☠️</span>
+        <div><div class="gr-name" style="color:var(--purple)">Serial Killer Menang</div><div class="gr-desc">Jadi pemain terakhir yang hidup</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🎭</span>
+        <div><div class="gr-name" style="color:var(--pink)">Jester Menang</div><div class="gr-desc">Berhasil dihukum lewat voting warga (menang sendiri!)</div></div>
+      </div>
+    </div>
+
+    <!-- SEMUA ROLE -->
+    <div class="guide-section">
+      <h2>👥 Semua Peran</h2>
+      <div class="guide-role">
+        <span class="gr-icon">🔪</span>
+        <div><div class="gr-name" style="color:var(--red)">Mafia</div><div class="gr-desc">Tim jahat. Setiap malam pilih 1 orang untuk dibunuh. Siang hari berpura-pura jadi warga. Mafia bisa saling kenal (jika lebih dari 1).</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">👤</span>
+        <div><div class="gr-name" style="color:var(--green)">Warga</div><div class="gr-desc">Tidak punya skill khusus. Andalkan kemampuan diskusi dan analisa saat siang untuk menemukan Mafia.</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🩺</span>
+        <div><div class="gr-name" style="color:var(--blue)">Dokter</div><div class="gr-desc">Setiap malam pilih 1 orang untuk diselamatkan. Jika target sama dengan target Mafia → orang itu selamat! Bisa melindungi diri sendiri.</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🕵️</span>
+        <div><div class="gr-name" style="color:var(--yellow)">Detektif</div><div class="gr-desc">Setiap malam cek 1 pemain → dapat info "Mafia / Bukan Mafia". Gunakan informasi ini dengan bijak saat diskusi!</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🎭</span>
+        <div><div class="gr-name" style="color:var(--pink)">Jester</div><div class="gr-desc">Tujuan: <b>INGIN dihukum</b> oleh voting warga! Berpura-pura mencurigakan agar dieliminasi. Tidak punya aksi malam. Kalau berhasil dihukum → menang sendiri!</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">🛡️</span>
+        <div><div class="gr-name" style="color:var(--orange)">Bodyguard</div><div class="gr-desc">Setiap malam pilih 1 orang untuk dilindungi. Jika target diserang Mafia/SK → Bodyguard yang mati sebagai gantinya. Bisa melindungi diri sendiri.</div></div>
+      </div>
+      <div class="guide-role">
+        <span class="gr-icon">☠️</span>
+        <div><div class="gr-name" style="color:var(--purple)">Serial Killer</div><div class="gr-desc">Pihak ketiga. Bunuh 1 orang tiap malam sendiri (bukan bagian Mafia). Menang jika jadi yang terakhir hidup. Musuh semua orang!</div></div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUSI ROLE -->
+    <div class="guide-section">
+      <h2>📊 Distribusi Peran</h2>
+      <table class="guide-dist-table">
+        <tr>
+          <th>Pemain</th><th>🔪</th><th>🩺</th><th>🕵️</th><th>🎭</th><th>🛡️</th><th>☠️</th><th>👤</th>
+        </tr>
+        <tr><td style="color:var(--text);font-weight:600">4–5</td><td>1</td><td>1</td><td>1</td><td>—</td><td>—</td><td>—</td><td>sisa</td></tr>
+        <tr><td style="color:var(--text);font-weight:600">6–7</td><td>1</td><td>1</td><td>1</td><td>1</td><td>—</td><td>—</td><td>sisa</td></tr>
+        <tr><td style="color:var(--text);font-weight:600">8–9</td><td>2</td><td>1</td><td>1</td><td>1</td><td>1</td><td>—</td><td>sisa</td></tr>
+        <tr><td style="color:var(--text);font-weight:600">10+</td><td>2</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>sisa</td></tr>
+      </table>
+    </div>
+
+    <!-- TIPS -->
+    <div class="guide-section">
+      <h2>💡 Tips</h2>
+      <div class="guide-role"><span class="gr-icon">🎯</span><div><div class="gr-name">Urutan Aksi Malam</div><div class="gr-desc">Mafia 🔪 → Serial Killer ☠️ → Bodyguard 🛡️ → Dokter 🩺 → Detektif 🕵️</div></div></div>
+      <div class="guide-role"><span class="gr-icon">😈</span><div><div class="gr-name">Hati-hati Jester!</div><div class="gr-desc">Kadang pemain yang "keliatan banget" mencurigakan justru adalah Jester yang ingin dihukum. Jangan mudah terpancing!</div></div></div>
+      <div class="guide-role"><span class="gr-icon">🤫</span><div><div class="gr-name">Detektif Harus Hati-hati</div><div class="gr-desc">Jangan langsung kasih tahu kamu Detektif — Mafia akan langsung targetin kamu malam berikutnya!</div></div></div>
+    </div>
+
+    <button class="btn btn-red" onclick="closeGuide()" style="max-width:300px;margin:0 auto">✓ Mengerti, Mulai Main!</button>
+  </div>
+</div>
+
+<div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+// ── ROLES ────────────────────────────────────────────────────────
+const ROLES = {
+  mafia:    { name:'Mafia',         icon:'🔪', color:'var(--red)',    team:'mafia',   desc:'Setiap malam pilih 1 orang untuk dibunuh. Siang hari berpura-pura jadi warga biasa!' },
+  villager: { name:'Warga',         icon:'👤', color:'var(--green)',  team:'village', desc:'Tidak punya skill malam. Gunakan logika & diskusi untuk temukan Mafia saat siang!' },
+  doctor:   { name:'Dokter',        icon:'🩺', color:'var(--blue)',   team:'village', desc:'Pilih 1 orang untuk diselamatkan tiap malam. Jika cocok dengan target Mafia → selamat!' },
+  detective:{ name:'Detektif',      icon:'🕵️', color:'var(--yellow)', team:'village', desc:'Cek 1 pemain tiap malam → dapat info apakah dia Mafia atau bukan.' },
+  jester:   { name:'Jester',        icon:'🎭', color:'var(--pink)',   team:'jester',  desc:'Tujuanmu: INGIN dihukum oleh voting! Berhasil dieliminasi = kamu menang sendiri.' },
+  bodyguard:{ name:'Bodyguard',     icon:'🛡️', color:'var(--orange)', team:'village', desc:'Pilih 1 orang untuk dilindungi. Jika target diserang → kamu yang mati!' },
+  sk:       { name:'Serial Killer', icon:'☠️', color:'var(--purple)', team:'sk',      desc:'Bunuh 1 orang tiap malam sendirian. Menang jika jadi yang terakhir hidup!' },
+};
+
+// Night action order (offline moderator view)
+const NIGHT_ORDER = ['mafia','sk','bodyguard','doctor','detective'];
+
+function getRoleDist(n) {
+  if(n<=5)  return {mafia:1,doctor:1,detective:1,jester:0,bodyguard:0,sk:0};
+  if(n<=7)  return {mafia:1,doctor:1,detective:1,jester:1,bodyguard:0,sk:0};
+  if(n<=9)  return {mafia:2,doctor:1,detective:1,jester:1,bodyguard:1,sk:0};
+  return          {mafia:2,doctor:1,detective:1,jester:1,bodyguard:1,sk:1};
+}
+
+function buildRoles(n) {
+  const dist = getRoleDist(n);
+  const arr = [];
+  const vill = n - Object.values(dist).reduce((a,b)=>a+b,0);
+  Object.entries(dist).forEach(([r,c])=>{ for(let i=0;i<c;i++) arr.push(r); });
+  for(let i=0;i<vill;i++) arr.push('villager');
+  return shuffle(arr);
+}
+
+// ── STATE ────────────────────────────────────────────────────────
+const S = {
+  myId: localStorage.getItem('maf_id')||genId(),
+  myName:'',roomCode:'',isHost:false,mode:'online',
+  room:null,unsubFn:null,
+  // offline
+  oPlayers:[],oRound:1,oPhase:'distribute',
+  oDistIdx:0,oShowRole:false,
+  oNight:{wolfTarget:null,skTarget:null,bgTarget:null,docTarget:null,detTarget:null,detResult:null},
+  oElim:null,oVoteMap:{},oVoteIdx:0,
+  oWinner:'',oWinReason:'',oNightKills:[],
+  oCount:6,oNames:Array.from({length:15},(_,i)=>`Pemain ${i+1}`),
+};
+localStorage.setItem('maf_id',S.myId);
+
+let db=null;
+function initFB(){
+  try{
+    if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;
+    if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+    db=firebase.database();return true;
+  }catch(e){return false;}
+}
+const FB=initFB();
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function genId(){return'm'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+function aliveList(ps){return Object.entries(ps).filter(([,p])=>p.isAlive).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0));}
+function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function openGuide(){document.getElementById('guide').classList.add('open');}
+function closeGuide(){document.getElementById('guide').classList.remove('open');}
+
+// ── FIREBASE OPS ─────────────────────────────────────────────────
+async function fbCreate(name){
+  let code,exists=true;
+  while(exists){code=genCode();const s=await db.ref(`maf_rooms/${code}`).once('value');exists=s.exists()&&s.val().status!=='gameover';}
+  const now=Date.now();
+  await db.ref(`maf_rooms/${code}`).set({
+    code,hostId:S.myId,status:'lobby',round:1,
+    winner:null,winReason:'',nightKills:null,detResult:null,
+    eliminated:null,votes:null,isTie:false,createdAt:now,
+    players:{[S.myId]:{name,isAlive:true,role:'',hasSeenRole:false,hasActed:false,hasVoted:false,joinedAt:now}}
+  });
+  return code;
+}
+async function fbJoin(code,name){
+  const s=await db.ref(`maf_rooms/${code}`).once('value');
+  if(!s.exists())throw new Error('Room tidak ditemukan');
+  const r=s.val();
+  if(r.status!=='lobby')throw new Error('Game sudah dimulai');
+  if(Object.keys(r.players||{}).length>=15)throw new Error('Room penuh');
+  if(r.players&&r.players[S.myId]){await db.ref(`maf_rooms/${code}/players/${S.myId}/name`).set(name);return r;}
+  await db.ref(`maf_rooms/${code}/players/${S.myId}`).set({name,isAlive:true,role:'',hasSeenRole:false,hasActed:false,hasVoted:false,joinedAt:Date.now()});
+  return r;
+}
+function fbListen(code){
+  if(S.unsubFn)S.unsubFn();
+  const ref=db.ref(`maf_rooms/${code}`);
+  const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});
+  S.unsubFn=()=>ref.off('value',h);
+}
+async function fbStart(){
+  const r=S.room,pids=Object.keys(r.players);
+  if(pids.length<4){toast('Minimal 4 pemain!');return;}
+  const roles=buildRoles(pids.length);
+  const u={};
+  pids.forEach((id,i)=>{
+    u[`players/${id}/role`]=roles[i];u[`players/${id}/hasSeenRole`]=false;
+    u[`players/${id}/hasActed`]=false;u[`players/${id}/hasVoted`]=false;u[`players/${id}/isAlive`]=true;
+  });
+  u.status='distribute';u.round=1;u.winner=null;u.winReason='';u.eliminated=null;u.nightKills=null;u.votes=null;u.isTie=false;
+  await db.ref(`maf_rooms/${S.roomCode}`).update(u);
+}
+async function fbSeenRole(){
+  await db.ref(`maf_rooms/${S.roomCode}/players/${S.myId}/hasSeenRole`).set(true);
+  const s=await db.ref(`maf_rooms/${S.roomCode}/players`).once('value');
+  if(Object.values(s.val()).every(p=>p.hasSeenRole)){
+    await db.ref(`maf_rooms/${S.roomCode}`).update({status:'night'});
+  }
+}
+async function fbNightAct(targetId){
+  const r=S.room,me=r.players[S.myId],role=me.role;
+  const u={[`players/${S.myId}/hasActed`]:true};
+  if(role==='mafia')    u[`nightActions/mafia/${S.myId}`]=targetId;
+  if(role==='sk')       u['nightActions/sk']=targetId;
+  if(role==='bodyguard')u['nightActions/bg']=targetId;
+  if(role==='doctor')   u['nightActions/doc']=targetId;
+  if(role==='detective')u['nightActions/det']=targetId;
+  await db.ref(`maf_rooms/${S.roomCode}`).update(u);
+  await checkNightDone();
+}
+async function checkNightDone(){
+  const s=await db.ref(`maf_rooms/${S.roomCode}`).once('value');
+  const r=s.val();const al=aliveList(r.players);
+  const actRoles=['mafia','sk','bodyguard','doctor','detective'];
+  const needAct=al.filter(([,p])=>actRoles.includes(p.role));
+  if(!needAct.every(([id])=>r.players[id].hasActed))return;
+  // Resolve night
+  const na=r.nightActions||{};
+  // Mafia target (majority vote)
+  const mafVotes=Object.values(na.mafia||{});
+  const mt={};mafVotes.forEach(t=>{mt[t]=(mt[t]||0)+1;});
+  const maxM=mafVotes.length?Math.max(...Object.values(mt)):0;
+  const mafTied=Object.entries(mt).filter(([,c])=>c===maxM).map(([id])=>id);
+  const mafKill=mafTied.length?mafTied[Math.floor(Math.random()*mafTied.length)]:null;
+  const skKill=na.sk||null;
+  const bgTarget=na.bg||null;const docTarget=na.doc||null;const detTarget=na.det||null;
+  // Bodyguard: if target is attacked, BG dies instead
+  let kills=[];
+  if(mafKill){
+    if(mafKill===bgTarget) kills.push({victim:r.players[bgTarget]?.name?bgTarget:null,type:'bg_sacrifice',bg:bgTarget});
+    else if(mafKill===docTarget){/* saved */}
+    else kills.push({victim:mafKill,type:'mafia'});
+  }
+  if(skKill&&skKill!==docTarget) kills.push({victim:skKill,type:'sk'});
+  // Det result
+  let detResult=null;
+  if(detTarget){
+    const tr=r.players[detTarget]?.role;
+    detResult={target:detTarget,isMafia:tr==='mafia'||tr==='sk'};
+  }
+  await db.ref(`maf_rooms/${S.roomCode}`).update({status:'dayReveal',nightKills:kills,detResult,nightActions:null});
+}
+async function fbStartDay(){
+  if(!S.isHost)return;
+  const r=S.room;const kills=r.nightKills||[];const u={};
+  kills.forEach(k=>{if(k.victim)u[`players/${k.victim}/isAlive`]=false;});
+  // Check win
+  const fp=JSON.parse(JSON.stringify(r.players));
+  kills.forEach(k=>{if(k.victim&&fp[k.victim])fp[k.victim].isAlive=false;});
+  const win=checkWin(fp);
+  if(win){u.winner=win.winner;u.winReason=win.reason;u.status='gameover';}
+  else{
+    const al=Object.entries(fp).filter(([,p])=>p.isAlive);
+    al.forEach(([id])=>{u[`players/${id}/hasActed`]=false;u[`players/${id}/hasVoted`]=false;});
+    u.status='day';u.votes=null;u.eliminated=null;u.isTie=false;
+  }
+  await db.ref(`maf_rooms/${S.roomCode}`).update(u);
+}
+function checkWin(ps){
+  const al=Object.entries(ps).filter(([,p])=>p.isAlive);
+  const mafia=al.filter(([,p])=>p.role==='mafia');
+  const sk=al.filter(([,p])=>p.role==='sk');
+  const village=al.filter(([,p])=>p.role!=='mafia'&&p.role!=='sk');
+  if(mafia.length===0&&sk.length===0)return{winner:'village',reason:'Semua ancaman berhasil dieliminasi!'};
+  if(mafia.length>=village.length+sk.length)return{winner:'mafia',reason:'Mafia berhasil menguasai desa!'};
+  if(al.length<=1&&sk.length===1)return{winner:'sk',reason:`${al[0][1].name} berhasil bertahan sendirian!`};
+  return null;
+}
+async function fbVote(targetId){
+  await db.ref(`maf_rooms/${S.roomCode}/votes/${S.myId}`).set(targetId);
+  await db.ref(`maf_rooms/${S.roomCode}/players/${S.myId}/hasVoted`).set(true);
+  const s=await db.ref(`maf_rooms/${S.roomCode}`).once('value');
+  const r=s.val();const al=aliveList(r.players);
+  if(al.every(([id])=>r.players[id].hasVoted))await resolveDayVote(r);
+}
+async function resolveDayVote(r){
+  const votes=r.votes||{};const al=aliveList(r.players);const t={};
+  al.forEach(([id])=>{t[id]=0;});Object.values(votes).forEach(tid=>{if(t[tid]!==undefined)t[tid]++;});
+  const max=Math.max(...Object.values(t));const tied=Object.entries(t).filter(([,c])=>c===max).map(([id])=>id);
+  const eId=tied[Math.floor(Math.random()*tied.length)];
+  await db.ref(`maf_rooms/${S.roomCode}`).update({eliminated:eId,status:'dayElim',isTie:tied.length>1});
+}
+async function fbConfirmElim(){
+  if(!S.isHost)return;
+  const r=S.room;const eId=r.eliminated;const elim=r.players[eId];
+  const u={[`players/${eId}/isAlive`]:false};
+  // Jester special win
+  if(elim.role==='jester'){u.winner='jester';u.winReason=`${elim.name} berhasil dihukum — Jester menang!`;u.status='gameover';}
+  else{
+    const fp=JSON.parse(JSON.stringify(r.players));fp[eId].isAlive=false;
+    const win=checkWin(fp);
+    if(win){u.winner=win.winner;u.winReason=win.reason;u.status='gameover';}
+    else{
+      const al=Object.entries(fp).filter(([,p])=>p.isAlive);
+      al.forEach(([id])=>{u[`players/${id}/hasActed`]=false;u[`players/${id}/hasVoted`]=false;});
+      u.status='night';u.round=(r.round||1)+1;u.nightKills=null;u.detResult=null;u.nightActions=null;u.votes=null;u.eliminated=null;
+    }
+  }
+  await db.ref(`maf_rooms/${S.roomCode}`).update(u);
+}
+async function fbPlayAgain(){
+  if(!S.isHost)return;
+  const r=S.room,pids=Object.keys(r.players),u={};
+  pids.forEach(id=>{u[`players/${id}/role`]='';u[`players/${id}/isAlive`]=true;u[`players/${id}/hasSeenRole`]=false;u[`players/${id}/hasActed`]=false;u[`players/${id}/hasVoted`]=false;});
+  u.status='lobby';u.round=1;u.winner=null;u.winReason='';u.eliminated=null;u.nightKills=null;u.votes=null;
+  await db.ref(`maf_rooms/${S.roomCode}`).update(u);
+}
+async function fbKick(tid){
+  if(!S.isHost||tid===S.myId)return;
+  await db.ref(`maf_rooms/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');
+}
+
+// ── ROUTER ───────────────────────────────────────────────────────
+function renderPhase(){
+  if(S.mode==='offline'){renderOff();return;}
+  const r=S.room;if(!r)return;
+  const p=r.status;
+  if(p==='lobby')     return rLobby();
+  if(p==='distribute')return rDist();
+  if(p==='night')     return rNight();
+  if(p==='dayReveal') return rDayReveal();
+  if(p==='day')       return rDay();
+  if(p==='dayElim')   return rDayElim();
+  if(p==='gameover')  return rGameover();
+}
+
+// ── HOME ─────────────────────────────────────────────────────────
+function rHome(){
+  render(`
+    <div class="ph" style="margin-top:8px">
+      <div class="ey">🔪 Mafia</div>
+      <h1>Pilih Mode Main</h1>
+    </div>
+    <div class="card">
+      <div class="lbl">Nama kamu</div>
+      <input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}"
+        oninput="S.myName=this.value.trim()">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">
+        ${FB?'<span style="color:var(--green)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi</span>'}
+      </div>
+    </div>
+    ${FB?`
+    <div class="card c-red">
+      <div class="lbl">🌐 Online Multiplayer</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Tiap pemain pakai HP masing-masing, aksi malam privat</p>
+      <button class="btn btn-red" onclick="onCreate()">+ Buat Room Baru</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+      <button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button>
+    </div>`:''}
+    <div class="card">
+      <div class="lbl">📱 Offline (Moderator Mode)</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Butuh 1 moderator yang pegang HP. Pemain lain tutup mata saat malam.</p>
+      <button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline</button>
+    </div>
+    <button class="btn btn-ora" onclick="openGuide()" style="margin-top:4px">📖 Cara Main & Semua Peran</button>
+    <button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:6px">← Kembali ke Hub</button>
+  `);
+  setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);
+}
+
+async function onCreate(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  if(!n){toast('Masukkan namamu!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);
+  try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+async function onJoin(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  const c=($('ci')?.value||'').toUpperCase().trim();
+  if(!n){toast('Masukkan namamu!');return;}
+  if(c.length!==4){toast('Kode harus 4 huruf!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);
+  try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+function onOffline(){S.myName=($('ni')?.value||'').trim()||S.myName||'Moderator';S.mode='offline';rOffSetup();}
+function leaveRoom(){if(S.unsubFn){S.unsubFn();S.unsubFn=null;}S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();}
+function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+// ── LOBBY ────────────────────────────────────────────────────────
+function rLobby(){
+  const r=S.room,ps=r.players||{};
+  const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+  const pc=pids.length,dist=getRoleDist(pc);
+  const vill=pc-Object.values(dist).reduce((a,b)=>a+b,0);
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>Waiting Room</h1></div>
+    <div class="card" style="text-align:center">
+      <div class="lbl">Kode Room</div>
+      <div class="rcode">${esc(r.code)}</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Bagikan ke teman-temanmu</p>
+      <button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="lbl" style="margin:0">Pemain (${pc}/15)</div>
+        ${pc>=4?`<span class="badge b-grn">Siap main!</span>`:`<span class="badge b-ora">Butuh ${4-pc} lagi</span>`}
+      </div>
+      ${pids.map(id=>`
+        <div class="pi">
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-weight:500">${esc(ps[id].name)}</span>
+            ${id===r.hostId?'<span class="badge b-ora">Host</span>':''}
+            ${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}
+          </div>
+          ${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600">Kick</button>`:'<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>'}
+        </div>`).join('')}
+    </div>
+    ${pc>=4?`
+    <div class="card" style="padding:14px">
+      <div class="lbl">Peran yang akan dibagikan (${pc} pemain)</div>
+      <div class="rdist">
+        <div class="rdist-item"><span class="ri2">🔪</span><span class="rc">${dist.mafia}</span>Mafia</div>
+        <div class="rdist-item"><span class="ri2">🩺</span><span class="rc">${dist.doctor}</span>Dokter</div>
+        <div class="rdist-item"><span class="ri2">🕵️</span><span class="rc">${dist.detective}</span>Detektif</div>
+        <div class="rdist-item"><span class="ri2">🎭</span><span class="rc">${dist.jester}</span>Jester</div>
+        <div class="rdist-item"><span class="ri2">🛡️</span><span class="rc">${dist.bodyguard}</span>BGuard</div>
+        <div class="rdist-item"><span class="ri2">☠️</span><span class="rc">${dist.sk}</span>SK</div>
+        <div class="rdist-item"><span class="ri2">👤</span><span class="rc">${Math.max(0,vill)}</span>Warga</div>
+      </div>
+    </div>`:''}
+    ${S.isHost?`<button class="btn btn-red" ${pc>=4?'':'disabled'} onclick="fbStart()">▶ Mulai Game · ${pc} Pemain</button>`
+      :`<div class="card" style="text-align:center;padding:20px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host memulai...</p></div>`}
+    <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>
+    <button class="btn btn-ora" onclick="openGuide()" style="margin-top:6px">📖 Lihat Cara Main</button>
+  `);
+}
+
+// ── DISTRIBUTE ───────────────────────────────────────────────────
+function rDist(){
+  const r=S.room,me=r.players[S.myId];if(!me)return;
+  const role=ROLES[me.role]||{};
+  const colorMap={mafia:'c-red',doctor:'c-blue',detective:'c-yel',jester:'c-pink',bodyguard:'c-ora',sk:'c-pur',villager:'c-grn'};
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Lihat Peran</div><h1>Giliran Kamu</h1></div>
+    <div class="card ${me.hasSeenRole?colorMap[me.role]||'':''}">
+      ${!me.hasSeenRole?`
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:52px;margin-bottom:12px">🔒</div>
+          <p style="font-size:14px;color:var(--text2);margin-bottom:18px">Pastikan hanya kamu yang melihat layar</p>
+          <button class="btn btn-ora" onclick="doRevealRole()" style="max-width:260px;margin:0 auto">👁 Tap untuk Lihat Peran</button>
+        </div>
+      `:`
+        <div class="role-box" style="background:${role.color}15;border:1.5px solid ${role.color}40">
+          <span class="ri">${role.icon}</span>
+          <div class="rt" style="color:${role.color}">Peranmu</div>
+          <div class="rn" style="color:${role.color}">${role.name}</div>
+          <div class="rd" style="color:var(--text2)">${role.desc}</div>
+        </div>
+        <button class="btn btn-green" onclick="fbSeenRole()">✓ Mengerti, Lanjutkan</button>
+      `}
+    </div>
+    <div class="card">
+      <div class="lbl">Status Pemain</div>
+      ${Object.entries(r.players).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>`
+        <div class="pi">
+          <span>${esc(p.name)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span>
+          ${p.hasSeenRole?'<span style="color:var(--green);font-size:12px;font-weight:600">✓ Siap</span>'
+            :'<div class="wp" style="gap:3px"><span style="width:4px;height:4px"></span><span style="width:4px;height:4px"></span><span style="width:4px;height:4px"></span></div>'}
+        </div>`).join('')}
+    </div>
+  `);
+}
+function doRevealRole(){
+  const me=S.room.players[S.myId];const role=ROLES[me.role]||{};
+  const colorMap={mafia:'c-red',doctor:'c-blue',detective:'c-yel',jester:'c-pink',bodyguard:'c-ora',sk:'c-pur',villager:'c-grn'};
+  const c=document.querySelector('.card');if(!c)return;
+  c.className=`card ${colorMap[me.role]||''}`;
+  c.innerHTML=`
+    <div class="role-box" style="background:${role.color}15;border:1.5px solid ${role.color}40">
+      <span class="ri">${role.icon}</span>
+      <div class="rt" style="color:${role.color}">Peranmu</div>
+      <div class="rn" style="color:${role.color}">${role.name}</div>
+      <div class="rd" style="color:var(--text2)">${role.desc}</div>
+    </div>
+    <button class="btn btn-green" onclick="fbSeenRole()">✓ Mengerti, Lanjutkan</button>
+  `;
+}
+
+// ── NIGHT (ONLINE) ───────────────────────────────────────────────
+function rNight(){
+  const r=S.room,me=r.players[S.myId];
+  if(!me||!me.isAlive){render(`<div class="ph"><div class="ey">🌙 Malam ${r.round}</div><h1>Kamu Sudah Mati</h1></div><div class="card" style="text-align:center;padding:28px"><div style="font-size:56px;margin-bottom:12px">👻</div><p style="color:var(--text2)">Saksikan dari alam sana...</p><div class="wp" style="margin-top:12px"><span></span><span></span><span></span></div></div>`);return;}
+  const al=aliveList(r.players);const role=me.role;const roleDef=ROLES[role]||{};
+
+  const targets={
+    mafia: al.filter(([id])=>r.players[id].role!=='mafia'),
+    sk:    al.filter(([id])=>id!==S.myId),
+    bodyguard: al,
+    doctor:al,
+    detective:al.filter(([id])=>id!==S.myId),
+    villager:[],jester:[],
+  };
+
+  const colorClass={mafia:'c-red',sk:'c-pur',bodyguard:'c-ora',doctor:'c-blue',detective:'c-yel'};
+  const actionLabel={mafia:'🔪 Mangsa',sk:'☠️ Bunuh',bodyguard:'🛡️ Lindungi',doctor:'🩺 Selamatkan',detective:'🕵️ Cek'};
+
+  render(`
+    <div class="sbar fade">
+      <span class="phase">🌙 Malam ${r.round||1}</span>
+      <span class="cod">${esc(r.code)}</span>
+    </div>
+    <div class="ph"><div class="ey">Aksi Malam</div><h1>${me.hasActed?'Aksi Terkirim':'Giliran Kamu'}</h1></div>
+    ${me.hasActed?`
+      <div class="card" style="text-align:center;padding:24px">
+        <div style="font-size:40px;margin-bottom:10px">✅</div>
+        <p style="font-weight:600;color:var(--green)">Aksi malam sudah dikirim</p>
+        <div class="wp" style="margin-top:12px"><span></span><span></span><span></span></div>
+        <p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu pemain lain...</p>
+      </div>
+    `:targets[role]&&targets[role].length>0?`
+      <div class="card ${colorClass[role]||''}">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:36px;margin-bottom:6px">${roleDef.icon}</div>
+          <p style="font-weight:600;color:${roleDef.color}">${roleDef.name} — pilih target aksimu</p>
+        </div>
+        ${targets[role].map(([id,p])=>`
+          <div class="pi clk" onclick="fbNightAct('${id}')">
+            <span style="font-weight:500">${esc(p.name)}</span>
+            <span style="font-size:12px;font-weight:600;color:${roleDef.color}">${actionLabel[role]||'Pilih'} →</span>
+          </div>`).join('')}
+      </div>
+    `:`
+      <div class="card" style="text-align:center;padding:24px">
+        <div style="font-size:48px;margin-bottom:12px">😴</div>
+        <p style="font-weight:600;font-size:15px">Tidur malam ini</p>
+        <p style="font-size:13px;color:var(--text2);margin-top:6px">Peranmu tidak punya aksi malam</p>
+        <div class="wp" style="margin-top:14px"><span></span><span></span><span></span></div>
+      </div>
+    `}
+  `);
+}
+
+// ── DAY REVEAL ───────────────────────────────────────────────────
+function rDayReveal(){
+  const r=S.room,me=r.players[S.myId];
+  const kills=r.nightKills||[];const isDet=me?.role==='detective'&&me?.isAlive;
+  render(`
+    <div class="sbar fade"><span class="phase">☀️ Pagi Ronde ${r.round||1}</span><span class="cod">${esc(r.code)}</span></div>
+    <div class="ph"><div class="ey">Pagi Hari</div><h1>Semalam Terjadi...</h1></div>
+    ${kills.length===0?`
+      <div class="card c-grn" style="text-align:center;padding:24px">
+        <div style="font-size:48px;margin-bottom:10px">🛡️</div>
+        <p style="font-weight:600;color:var(--green);font-size:16px">Semua selamat semalam!</p>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px">Serangan berhasil digagalkan</p>
+      </div>
+    `:kills.map(k=>`
+      <div class="card c-red" style="text-align:center;padding:20px">
+        <div style="font-size:40px;margin-bottom:8px">💀</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:4px">
+          ${k.type==='mafia'?'Mafia menyerang':k.type==='sk'?'Serial Killer menyerang':'Bodyguard mengorbankan diri'}
+        </p>
+        <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red)">${esc(r.players[k.victim]?.name||'?')}</p>
+        <span class="badge b-red" style="margin-top:8px">${ROLES[r.players[k.victim]?.role]?.icon||'?'} ${ROLES[r.players[k.victim]?.role]?.name||'?'}</span>
+      </div>
+    `).join('')}
+    ${isDet&&r.detResult?`
+      <div class="card c-yel">
+        <div class="lbl" style="color:var(--yellow)">🕵️ Hasil Investigasimu (hanya kamu yang tahu)</div>
+        <p style="font-size:14px;color:var(--text2)">
+          <b style="color:var(--text)">${esc(r.players[r.detResult.target]?.name)}</b> adalah 
+          <b style="color:${r.detResult.isMafia?'var(--red)':'var(--green)'}">${r.detResult.isMafia?'⚠️ MAFIA / MUSUH':'✅ BUKAN Mafia'}</b>
+        </p>
+      </div>
+    `:''}
+    ${S.isHost?`<button class="btn btn-ora" onclick="fbStartDay()">☀️ Mulai Diskusi & Voting</button>`
+      :`<div class="card" style="text-align:center;padding:18px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host...</p></div>`}
+  `);
+}
+
+// ── DAY VOTE ─────────────────────────────────────────────────────
+function rDay(){
+  const r=S.room,me=r.players[S.myId];
+  const al=aliveList(r.players);const vc=al.filter(([,p])=>p.hasVoted).length;
+  render(`
+    <div class="sbar fade"><span class="phase">☀️ Siang Ronde ${r.round||1}</span><span class="cod">${esc(r.code)}</span></div>
+    <div class="ph"><div class="ey">Diskusi & Vote</div><h1>${me?.hasVoted?'Vote Terkirim':'Vote Siapa yang Dicurigai?'}</h1></div>
+    ${!me?.isAlive?`<div class="card" style="text-align:center;padding:24px"><div style="font-size:48px;margin-bottom:10px">👻</div><p style="color:var(--text2)">Kamu sudah mati, saksikan saja</p></div>`
+    :me?.hasVoted?`
+      <div class="card c-grn" style="text-align:center;padding:24px">
+        <div style="font-size:40px;margin-bottom:10px">✅</div>
+        <p style="font-weight:600;color:var(--green)">Vote terkirim!</p>
+        <p style="font-size:13px;color:var(--text2);margin-top:6px">${vc}/${al.length} sudah vote</p>
+        <div class="dots" style="margin-top:10px">${al.map(([,p])=>`<div class="dot ${p.hasVoted?'dn':'wt'}"></div>`).join('')}</div>
+      </div>
+    `:`
+      <div class="card">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">${vc}/${al.length} sudah vote. Siapa yang harus dihukum?</p>
+        ${al.filter(([id])=>id!==S.myId).map(([id,p])=>`
+          <div class="pi clk" onclick="fbVote('${id}')">
+            <span style="font-weight:500">${esc(p.name)}</span>
+            <span style="font-size:12px;color:var(--red);font-weight:600">Hukum →</span>
+          </div>`).join('')}
+      </div>
+    `}
+  `);
+}
+
+// ── DAY ELIM ─────────────────────────────────────────────────────
+function rDayElim(){
+  const r=S.room,eId=r.eliminated,elim=r.players[eId];if(!elim)return;
+  const role=ROLES[elim.role]||{};
+  render(`
+    <div class="sbar fade"><span class="phase">☀️ Siang Ronde ${r.round||1}</span><span class="cod">${esc(r.code)}</span></div>
+    <div class="ph"><div class="ey">Hasil Voting</div><h1>Dihukum!</h1></div>
+    <div class="card" style="text-align:center;padding:28px">
+      ${r.isTie?'<p style="font-size:12px;color:var(--text3);margin-bottom:10px">⚖ Hasil seri, dipilih acak</p>':''}
+      <div style="font-size:52px;margin-bottom:10px">${role.icon}</div>
+      <p style="font-family:\'Syne\',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px">${esc(elim.name)}</p>
+      <span class="badge" style="background:${role.color}20;color:${role.color};border:1px solid ${role.color}40;font-size:12px;padding:6px 14px">
+        ${role.icon} ${role.name}
+      </span>
+      ${elim.role==='jester'?`<p style="font-size:13px;color:var(--pink);font-weight:600;margin-top:12px">🎭 Jester berhasil dihukum — DIA MENANG!</p>`
+        :elim.role==='mafia'?`<p style="font-size:13px;color:var(--green);margin-top:10px">✓ Mafia berhasil ditemukan!</p>`
+        :`<p style="font-size:13px;color:var(--red);margin-top:10px">✗ Bukan Mafia... Pencarian berlanjut</p>`}
+    </div>
+    <div class="card">
+      <div class="lbl">Rekap Vote</div>
+      ${Object.entries(r.votes||{}).map(([vid,tid])=>`
+        <div class="pi">
+          <span style="color:var(--text2)">${esc(r.players[vid]?.name)}</span>
+          <span style="color:var(--text3);font-size:12px">→</span>
+          <span style="color:var(--red);font-weight:600">${esc(r.players[tid]?.name)}</span>
+        </div>`).join('')}
+    </div>
+    ${S.isHost?`<button class="btn btn-ora" onclick="fbConfirmElim()">→ Lanjutkan ke Malam Berikutnya</button>`
+      :`<div class="card" style="text-align:center;padding:18px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host...</p></div>`}
+  `);
+}
+
+// ── GAME OVER ────────────────────────────────────────────────────
+function rGameover(){
+  const r=S.room,ps=r.players||{};
+  const winnerColors={village:'var(--green)',mafia:'var(--red)',sk:'var(--purple)',jester:'var(--pink)'};
+  const winnerIcons={village:'🎉',mafia:'🔪',sk:'☠️',jester:'🎭'};
+  const wc=winnerColors[r.winner]||'var(--text)';
+  render(`
+    <div style="padding-top:16px;animation:fadeUp .4s ease both">
+      <div style="font-size:60px;text-align:center;margin-bottom:10px;animation:iconBounce 2s infinite">${winnerIcons[r.winner]||'🏆'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;text-align:center;color:${wc}">
+        ${r.winner==='village'?'Warga Menang!':r.winner==='mafia'?'Mafia Menang!':r.winner==='sk'?'Serial Killer Menang!':'Jester Menang!'}
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--text2);margin:8px 0 22px">${esc(r.winReason)}</p>
+      <div class="card">
+        <div class="lbl">Identitas Semua Pemain</div>
+        ${Object.entries(ps).sort((a,b)=>(a[1].joinedAt||0)-(b[1].joinedAt||0)).map(([id,p])=>{
+          const role=ROLES[p.role]||{icon:'?',name:'?',color:'var(--text)'};
+          return`<div class="pi ${!p.isAlive?'dead':''}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">${role.icon}</span>
+              <div>
+                <span style="font-weight:500">${esc(p.name)}</span>
+                ${id===S.myId?'<span class="badge b-dim" style="font-size:9px;margin-left:4px">Kamu</span>':''}
+                <div style="font-size:11px;color:${role.color}">${role.name}</div>
+              </div>
+            </div>
+            ${!p.isAlive?'<span class="badge b-dim">💀</span>':'<span class="badge b-grn">✓</span>'}
+          </div>`;}).join('')}
+      </div>
+      ${S.isHost?`<button class="btn btn-ora" onclick="fbPlayAgain()">↺ Main Lagi (Room Sama)</button>`
+        :`<div class="card" style="text-align:center;padding:18px"><div class="wp"><span></span><span></span><span></span></div></div>`}
+      <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button>
+    </div>
+  `);
+}
+
+// ── OFFLINE MODE ─────────────────────────────────────────────────
+function rOffSetup(){
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Offline</div><h1>Setup Pemain</h1><div class="sub">Butuh 1 moderator yang pegang HP</div></div>
+    <div class="card">
+      <div class="lbl">Jumlah Pemain (tidak termasuk moderator)</div>
+      <div class="count-sel">
+        <button class="count-btn" onclick="oChg(-1)">−</button>
+        <div id="ocd" class="count-num">${S.oCount}</div>
+        <button class="count-btn" onclick="oChg(1)">+</button>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Min 4, Max 15 pemain</div>
+      <div class="divider"></div>
+      <div class="lbl">Nama Pemain</div>
+      <div id="onl"></div>
+      <button class="btn btn-red" onclick="oStartGame()" style="margin-top:14px">▶ Mulai Game</button>
+    </div>
+    <button class="btn btn-ora" onclick="openGuide()" style="margin-top:4px">📖 Cara Main</button>
+    <button class="btn btn-ghost" onclick="rHome()" style="margin-top:6px">← Kembali</button>
+  `);
+  renderONames();
+}
+function oChg(d){S.oCount=Math.max(4,Math.min(15,S.oCount+d));$('ocd').textContent=S.oCount;renderONames();}
+function renderONames(){
+  const c=$('onl');if(!c)return;
+  c.innerHTML=Array.from({length:S.oCount},(_,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span>
+      <input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}"
+        oninput="S.oNames[${i}]=this.value.trim()" placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px">
+    </div>`).join('');
+}
+
+function oStartGame(){
+  const n=S.oCount;const names=S.oNames.slice(0,n).map((nm,i)=>nm||`Pemain ${i+1}`);
+  const roles=buildRoles(n);
+  S.oPlayers=names.map((name,i)=>({id:i,name,role:roles[i],isAlive:true}));
+  S.oRound=1;S.oPhase='distribute';S.oDistIdx=0;S.oShowRole=false;
+  S.oNight={};S.oElim=null;S.oVoteMap={};S.oVoteIdx=0;
+  renderOff();
+}
+
+function renderOff(){
+  const ph=S.oPhase;
+  if(ph==='distribute') return rODist();
+  if(ph==='night')      return rONight();
+  if(ph==='dayReveal')  return rODayReveal();
+  if(ph==='day')        return rODay();
+  if(ph==='dayElim')    return rODayElim();
+  if(ph==='gameover')   return rOGameover();
+}
+
+function oAlive(){return S.oPlayers.filter(p=>p.isAlive);}
+
+// Offline: distribute roles
+function rODist(){
+  const p=S.oPlayers[S.oDistIdx];const role=ROLES[p.role]||{};
+  const colorMap={mafia:'c-red',doctor:'c-blue',detective:'c-yel',jester:'c-pink',bodyguard:'c-ora',sk:'c-pur',villager:'c-grn'};
+  render(`
+    <div class="ph" style="margin-top:6px">
+      <div class="ey">Bagi Peran · ${S.oDistIdx+1}/${S.oPlayers.length}</div>
+      <h1>${esc(p.name)}</h1>
+    </div>
+    <div class="card ${S.oShowRole?colorMap[p.role]||'':''}">
+      ${!S.oShowRole?`
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:52px;margin-bottom:12px">🔒</div>
+          <p style="font-size:14px;color:var(--text2);margin-bottom:18px">Hanya <b>${esc(p.name)}</b> yang boleh lihat</p>
+          <button class="btn btn-ora" onclick="S.oShowRole=true;renderOff()" style="max-width:260px;margin:0 auto">👁 Tap untuk Lihat Peran</button>
+        </div>
+      `:`
+        <div class="role-box" style="background:${role.color}15;border:1.5px solid ${role.color}40">
+          <span class="ri">${role.icon}</span>
+          <div class="rt" style="color:${role.color}">Peranmu</div>
+          <div class="rn" style="color:${role.color}">${role.name}</div>
+          <div class="rd" style="color:var(--text2)">${role.desc}</div>
+        </div>
+        <button class="btn btn-green" onclick="oNextDist()">✓ Mengerti, Serahkan HP</button>
+      `}
+    </div>
+    <div class="dots">${S.oPlayers.map((_,i)=>`<div class="dot ${i<S.oDistIdx?'dn':i===S.oDistIdx?'cu':'wt'}"></div>`).join('')}</div>
+  `);
+}
+function oNextDist(){
+  if(S.oDistIdx+1>=S.oPlayers.length){S.oPhase='night';S.oNight={};renderOff();}
+  else{S.oDistIdx++;S.oShowRole=false;rODist();}
+}
+
+// Offline night — moderator controls everything
+function rONight(){
+  const al=oAlive();
+  const hasMafia=al.some(p=>p.role==='mafia');
+  const hasSK=al.some(p=>p.role==='sk');
+  const hasBG=al.some(p=>p.role==='bodyguard');
+  const hasDoc=al.some(p=>p.role==='doctor');
+  const hasDet=al.some(p=>p.role==='detective');
+  const n=S.oNight;
+
+  const mafNames=al.filter(p=>p.role==='mafia').map(p=>esc(p.name)).join(', ');
+
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">🌙 Malam Ronde ${S.oRound}</div><h1>Moderator Mode</h1><div class="sub">Panduan aksi malam — semua pemain tutup mata!</div></div>
+
+    ${hasMafia?`
+    <div class="card c-red">
+      <div class="lbl" style="color:var(--red)">🔪 Langkah 1 — Mafia Bangun</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Mafia: <b style="color:var(--text)">${mafNames}</b> — pilih target mangsa:</p>
+      ${al.filter(p=>p.role!=='mafia').map(p=>`
+        <div class="pi clk ${n.mafKill===p.id?'sel':''}" onclick="S.oNight.mafKill=${p.id};renderOff()">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          ${n.mafKill===p.id?'<span class="badge b-red">✓ Target</span>':'<span style="font-size:12px;color:var(--text3)">Pilih</span>'}
+        </div>`).join('')}
+    </div>`:''}
+
+    ${hasSK?`
+    <div class="card c-pur">
+      <div class="lbl" style="color:var(--purple)">☠️ Langkah 2 — Serial Killer Bangun</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">SK pilih target:</p>
+      ${al.filter(p=>p.role!=='sk').map(p=>`
+        <div class="pi clk ${n.skKill===p.id?'sel':''}" onclick="S.oNight.skKill=${p.id};renderOff()">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          ${n.skKill===p.id?'<span class="badge b-pur">✓ Target</span>':'<span style="font-size:12px;color:var(--text3)">Pilih</span>'}
+        </div>`).join('')}
+    </div>`:''}
+
+    ${hasBG?`
+    <div class="card c-ora">
+      <div class="lbl" style="color:var(--orange)">🛡️ Langkah 3 — Bodyguard Bangun</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Bodyguard pilih yang dilindungi:</p>
+      ${al.map(p=>`
+        <div class="pi clk ${n.bgTarget===p.id?'sel':''}" onclick="S.oNight.bgTarget=${p.id};renderOff()">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          ${n.bgTarget===p.id?'<span class="badge b-ora">✓ Lindungi</span>':'<span style="font-size:12px;color:var(--text3)">Pilih</span>'}
+        </div>`).join('')}
+    </div>`:''}
+
+    ${hasDoc?`
+    <div class="card c-blue">
+      <div class="lbl" style="color:var(--blue)">🩺 Langkah 4 — Dokter Bangun</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Dokter pilih yang diselamatkan:</p>
+      ${al.map(p=>`
+        <div class="pi clk ${n.docTarget===p.id?'sel':''}" onclick="S.oNight.docTarget=${p.id};renderOff()">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          ${n.docTarget===p.id?'<span class="badge b-blue">✓ Selamatkan</span>':'<span style="font-size:12px;color:var(--text3)">Pilih</span>'}
+        </div>`).join('')}
+    </div>`:''}
+
+    ${hasDet?`
+    <div class="card c-yel">
+      <div class="lbl" style="color:var(--yellow)">🕵️ Langkah 5 — Detektif Bangun</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Detektif cek satu pemain (kasih info diam-diam ke detektif):</p>
+      ${al.filter(p=>p.role!=='detective').map(p=>{
+        const isMafia=p.role==='mafia'||p.role==='sk';
+        return`<div class="pi clk" onclick="oDetCheck(${p.id})">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          <span style="font-size:12px;color:var(--yellow);font-weight:600">Cek →</span>
+        </div>`;}).join('')}
+    </div>`:''}
+
+    <button class="btn btn-ora" onclick="oEndNight()" ${n.mafKill!==undefined||!hasMafia?'':'disabled'}>☀️ Akhiri Malam → Pagi</button>
+  `);
+}
+
+function oDetCheck(targetId){
+  const p=S.oPlayers.find(x=>x.id===targetId);
+  const isMafia=p.role==='mafia'||p.role==='sk';
+  toast(`${p.name}: ${isMafia?'⚠️ MAFIA / MUSUH':'✅ BUKAN Mafia'}`);
+}
+
+function oEndNight(){
+  const n=S.oNight;const al=oAlive();
+  const kills=[];
+  // Mafia kill
+  if(n.mafKill!==undefined&&n.mafKill!==null){
+    if(n.mafKill===n.bgTarget){kills.push({victim:n.bgTarget,type:'bg_sacrifice'});}
+    else if(n.mafKill!==n.docTarget){kills.push({victim:n.mafKill,type:'mafia'});}
+  }
+  // SK kill
+  if(n.skKill!==undefined&&n.skKill!==null&&n.skKill!==n.docTarget){
+    kills.push({victim:n.skKill,type:'sk'});
+  }
+  S.oNightKills=kills;S.oPhase='dayReveal';renderOff();
+}
+
+function rODayReveal(){
+  const kills=S.oNightKills||[];
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">☀️ Pagi Ronde ${S.oRound}</div><h1>Semalam Terjadi...</h1></div>
+    ${kills.length===0?`
+      <div class="card c-grn" style="text-align:center;padding:24px">
+        <div style="font-size:48px;margin-bottom:10px">🛡️</div>
+        <p style="font-weight:600;color:var(--green);font-size:16px">Semua selamat semalam!</p>
+      </div>
+    `:kills.map(k=>{const p=S.oPlayers.find(x=>x.id===k.victim);const role=ROLES[p?.role]||{};
+      return`<div class="card c-red" style="text-align:center;padding:20px">
+        <div style="font-size:40px;margin-bottom:8px">💀</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:4px">${k.type==='mafia'?'Dibunuh Mafia':k.type==='sk'?'Dibunuh Serial Killer':'Bodyguard berkorban'}</p>
+        <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--red)">${esc(p?.name||'?')}</p>
+        <span class="badge b-red" style="margin-top:8px">${role.icon} ${role.name}</span>
+      </div>`;}).join('')}
+    <button class="btn btn-ora" onclick="oStartDay()">☀️ Mulai Diskusi & Voting</button>
+  `);
+}
+
+function oStartDay(){
+  const kills=S.oNightKills||[];
+  kills.forEach(k=>{if(k.victim!==undefined)S.oPlayers=S.oPlayers.map(p=>p.id===k.victim?{...p,isAlive:false}:p);});
+  const win=oCheckWin();
+  if(win){S.oWinner=win.winner;S.oWinReason=win.reason;S.oPhase='gameover';renderOff();return;}
+  S.oVoteIdx=0;S.oVoteMap={};S.oPhase='day';renderOff();
+}
+
+function oCheckWin(){
+  const al=oAlive();
+  const mafia=al.filter(p=>p.role==='mafia');const sk=al.filter(p=>p.role==='sk');
+  const village=al.filter(p=>p.role!=='mafia'&&p.role!=='sk');
+  if(mafia.length===0&&sk.length===0)return{winner:'village',reason:'Semua ancaman berhasil dieliminasi!'};
+  if(mafia.length>=village.length+sk.length)return{winner:'mafia',reason:'Mafia berhasil menguasai desa!'};
+  if(al.length<=1&&sk.length===1)return{winner:'sk',reason:`${al[0].name} berhasil bertahan sendirian!`};
+  return null;
+}
+
+function rODay(){
+  const al=oAlive();const voter=al[S.oVoteIdx];
+  render(`
+    <div class="sbar fade"><span class="phase">☀️ Siang ${S.oRound}</span><span style="font-size:12px;color:var(--text2)">Vote ${S.oVoteIdx+1}/${al.length}</span></div>
+    <div class="ph"><div class="ey">Voting</div><h1>${esc(voter.name)}</h1><div class="sub">Siapa yang kamu curigai sebagai Mafia?</div></div>
+    <div class="card">
+      ${al.filter(p=>p.id!==voter.id).map(p=>`
+        <div class="pi clk" onclick="oCastVote(${p.id})">
+          <span style="font-weight:500">${esc(p.name)}</span>
+          <span style="font-size:12px;color:var(--red);font-weight:600">Hukum →</span>
+        </div>`).join('')}
+    </div>
+    <div class="dots">${al.map((_,i)=>`<div class="dot ${i<S.oVoteIdx?'dn':i===S.oVoteIdx?'cu':'wt'}"></div>`).join('')}</div>
+  `);
+}
+function oCastVote(tid){
+  const al=oAlive(),voter=al[S.oVoteIdx];S.oVoteMap[voter.id]=tid;
+  if(S.oVoteIdx+1>=al.length)oResolveVote();
+  else{S.oVoteIdx++;renderOff();}
+}
+function oResolveVote(){
+  const al=oAlive(),t={};
+  al.forEach(p=>{t[p.id]=0;});Object.values(S.oVoteMap).forEach(tid=>{if(t[tid]!==undefined)t[tid]++;});
+  const max=Math.max(...Object.values(t));const tied=Object.entries(t).filter(([,c])=>c===max).map(([id])=>parseInt(id));
+  const eId=tied[Math.floor(Math.random()*tied.length)];
+  S.oElim=S.oPlayers.find(p=>p.id===eId);S.oPhase='dayElim';renderOff();
+}
+function rODayElim(){
+  const el=S.oElim,role=ROLES[el.role]||{};
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Hasil Vote</div><h1>Dihukum!</h1></div>
+    <div class="card" style="text-align:center;padding:28px">
+      <div style="font-size:52px;margin-bottom:10px">${role.icon}</div>
+      <p style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:8px">${esc(el.name)}</p>
+      <span class="badge" style="background:${role.color}20;color:${role.color};border:1px solid ${role.color}40;font-size:12px;padding:6px 14px">${role.icon} ${role.name}</span>
+      ${el.role==='jester'?`<p style="font-size:14px;color:var(--pink);font-weight:700;margin-top:12px">🎭 Jester berhasil dihukum — JESTER MENANG!</p>`
+        :el.role==='mafia'?`<p style="font-size:13px;color:var(--green);margin-top:10px">✓ Mafia berhasil ditemukan!</p>`
+        :`<p style="font-size:13px;color:var(--red);margin-top:10px">✗ Ini bukan Mafia...</p>`}
+    </div>
+    <button class="btn btn-ora" onclick="oConfirmElim()">→ Lanjutkan</button>
+  `);
+}
+function oConfirmElim(){
+  if(S.oElim.role==='jester'){S.oWinner='jester';S.oWinReason=`${S.oElim.name} berhasil dihukum — Jester menang!`;S.oPhase='gameover';renderOff();return;}
+  S.oPlayers=S.oPlayers.map(p=>p.id===S.oElim.id?{...p,isAlive:false}:p);
+  const win=oCheckWin();
+  if(win){S.oWinner=win.winner;S.oWinReason=win.reason;S.oPhase='gameover';renderOff();return;}
+  S.oRound++;S.oNight={};S.oElim=null;S.oVoteMap={};S.oPhase='night';renderOff();
+}
+function rOGameover(){
+  const winnerColors={village:'var(--green)',mafia:'var(--red)',sk:'var(--purple)',jester:'var(--pink)'};
+  const winnerIcons={village:'🎉',mafia:'🔪',sk:'☠️',jester:'🎭'};
+  const wc=winnerColors[S.oWinner]||'var(--text)';
+  render(`
+    <div style="padding-top:16px;animation:fadeUp .4s ease both">
+      <div style="font-size:60px;text-align:center;margin-bottom:10px;animation:iconBounce 2s infinite">${winnerIcons[S.oWinner]||'🏆'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;color:${wc}">
+        ${S.oWinner==='village'?'Warga Menang!':S.oWinner==='mafia'?'Mafia Menang!':S.oWinner==='sk'?'Serial Killer Menang!':'Jester Menang!'}
+      </div>
+      <p style="text-align:center;font-size:13px;color:var(--text2);margin:8px 0 22px">${esc(S.oWinReason)}</p>
+      <div class="card">
+        <div class="lbl">Identitas Semua Pemain</div>
+        ${S.oPlayers.map(p=>{const role=ROLES[p.role]||{icon:'?',name:'?',color:'var(--text)'};
+          return`<div class="pi ${!p.isAlive?'dead':''}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">${role.icon}</span>
+              <div><span style="font-weight:500">${esc(p.name)}</span><div style="font-size:11px;color:${role.color}">${role.name}</div></div>
+            </div>
+            ${!p.isAlive?'<span class="badge b-dim">💀</span>':'<span class="badge b-grn">✓</span>'}
+          </div>`;}).join('')}
+      </div>
+      <button class="btn btn-red" onclick="oStartGame()">↺ Main Lagi</button>
+      <button class="btn btn-ghost" onclick="S.mode='online';rHome()" style="margin-top:6px">← Menu Utama</button>
+    </div>
+  `);
+}
+
+window.onload=()=>rHome();
+</script>
+</body>
+</html>
