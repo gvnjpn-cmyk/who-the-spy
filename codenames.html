@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Tebak Kata</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{
+      --bg:#080c14;--glass:#ffffff08;--glass2:#ffffff12;--border:#ffffff14;--border2:#ffffff22;
+      --red:#f87171;--blue:#60a5fa;--green:#4ade80;--yellow:#fbbf24;--dark:#0a0a0f;
+      --text:#f0f4ff;--text2:#94a3b8;--text3:#475569;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at top left,rgba(96,165,250,.08) 0%,transparent 50%),
+                 radial-gradient(ellipse at bottom right,rgba(248,113,113,.07) 0%,transparent 50%)}
+    #app{position:relative;z-index:1;width:100%;max-width:540px;margin:0 auto;padding:16px 12px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+    @keyframes reveal{from{transform:rotateY(90deg)}to{transform:rotateY(0)}}
+    .fade{animation:fadeUp .3s ease both}
+
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .c-red{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)}
+    .c-blue{border-color:rgba(96,165,250,.4);background:rgba(96,165,250,.08)}
+    .c-grn{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.07)}
+
+    .ph{text-align:center;margin-bottom:18px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+      letter-spacing:2.5px;color:var(--blue);text-transform:uppercase;
+      background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.25);
+      border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,28px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:14px 20px;margin-top:10px;border:none;border-radius:14px;
+      cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn:active:not(:disabled){transform:scale(.97)}
+    .btn-blue{background:linear-gradient(135deg,var(--blue),#2563eb);color:#fff;box-shadow:0 4px 20px rgba(96,165,250,.3)}
+    .btn-red{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff;box-shadow:0 4px 20px rgba(248,113,113,.3)}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .btn-ghost:hover:not(:disabled){background:var(--glass2)}
+
+    .inp{width:100%;padding:12px 16px;background:rgba(255,255,255,.06);
+      border:1.5px solid var(--border2);border-radius:12px;color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--blue)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+    .inp-num{width:72px;text-align:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;padding:10px 8px}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-blue{background:rgba(96,165,250,.15);color:var(--blue);border:1px solid rgba(96,165,250,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border)}
+    .b-yel{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+
+    .pi{display:flex;align-items:center;justify-content:space-between;
+      padding:10px 14px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px;transition:all .2s}
+
+    .sbar{display:flex;align-items:center;justify-content:space-between;
+      padding:8px 14px;background:var(--glass);border:1px solid var(--border);
+      border-radius:12px;margin-bottom:12px;font-size:11px;font-weight:500;color:var(--text2)}
+
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;
+      background:linear-gradient(135deg,var(--blue),var(--red));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      text-align:center;letter-spacing:12px;padding:14px 0}
+
+    /* ── GAME BOARD ── */
+    .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}
+    .word-tile{
+      aspect-ratio:1.5;border-radius:10px;display:flex;align-items:center;justify-content:center;
+      font-family:'Syne',sans-serif;font-size:clamp(9px,2.5vw,12px);font-weight:700;
+      text-align:center;padding:4px;cursor:pointer;transition:all .2s;
+      border:2px solid transparent;line-height:1.2;letter-spacing:.3px;
+      text-transform:uppercase;word-break:break-word;
+    }
+    .word-tile:active{transform:scale(.95)}
+    /* Unknown (guesser view) */
+    .tile-unknown{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:var(--text)}
+    .tile-unknown:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3)}
+    /* Revealed */
+    .tile-red{background:rgba(248,113,113,.35);border-color:rgba(248,113,113,.6);color:#fff;cursor:default}
+    .tile-blue{background:rgba(96,165,250,.35);border-color:rgba(96,165,250,.6);color:#fff;cursor:default}
+    .tile-neutral{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:var(--text2);cursor:default}
+    .tile-assassin{background:rgba(0,0,0,.7);border-color:#555;color:#fff;cursor:default}
+    /* Spymaster hint overlays */
+    .tile-hint-red{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5);color:var(--red)}
+    .tile-hint-blue{background:rgba(96,165,250,.18);border-color:rgba(96,165,250,.5);color:var(--blue)}
+    .tile-hint-neutral{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15);color:var(--text3)}
+    .tile-hint-assassin{background:rgba(0,0,0,.4);border-color:#444;color:var(--text3)}
+
+    /* Clue area */
+    .clue-box{background:var(--glass2);border:1.5px solid var(--border2);border-radius:14px;padding:16px;margin:10px 0}
+    .clue-word{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);letter-spacing:1px}
+    .clue-num{font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--yellow);line-height:1}
+
+    /* Score display */
+    .score-bar{display:flex;gap:10px;margin-bottom:12px}
+    .score-team{flex:1;border-radius:12px;padding:12px;text-align:center}
+    .score-team.red{background:rgba(248,113,113,.15);border:1.5px solid rgba(248,113,113,.3)}
+    .score-team.blue{background:rgba(96,165,250,.15);border:1.5px solid rgba(96,165,250,.3)}
+    .score-team .tn{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.7}
+    .score-team .ts{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1.1}
+    .score-team.red .ts{color:var(--red)}.score-team.blue .ts{color:var(--blue)}
+
+    .wp{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .wp span{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulseDot .9s ease-in-out infinite}
+    .wp span:nth-child(2){animation-delay:.15s}.wp span:nth-child(3){animation-delay:.3s}
+
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(96,165,250,.2);border-top-color:var(--blue);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+      background:rgba(8,12,20,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid rgba(96,165,250,.4);border-radius:14px;
+      padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const ROOM_PREFIX = 'cdn_rooms';
+
+const WORD_POOL = [
+  "Apel","Bola","Meja","Kucing","Lautan","Bulan","Awan","Api","Air","Pohon",
+  "Buku","Kunci","Pintu","Jendela","Mobil","Motor","Kapal","Pesawat","Kereta","Sepeda",
+  "Rumah","Kantor","Sekolah","Pasar","Kebun","Pantai","Gunung","Sungai","Danau","Hutan",
+  "Dokter","Polisi","Guru","Koki","Pilot","Petani","Nelayan","Seniman","Ilmuwan","Tentara",
+  "Gitar","Piano","Drum","Biola","Suling","Trompet","Harpa","Akordeon","Marakas","Tamburin",
+  "Singa","Harimau","Gajah","Kuda","Sapi","Kambing","Ayam","Bebek","Ikan","Burung",
+  "Matahari","Bintang","Pelangi","Petir","Angin","Salju","Kabut","Hujan","Embun","Badai",
+  "Nasi","Roti","Daging","Sayur","Buah","Susu","Telur","Keju","Madu","Garam",
+  "Merah","Biru","Hijau","Kuning","Putih","Hitam","Oranye","Ungu","Coklat","Abu",
+  "Satu","Dua","Tiga","Empat","Lima","Enam","Tujuh","Delapan","Sembilan","Sepuluh",
+  "Kepala","Tangan","Kaki","Mata","Telinga","Hidung","Mulut","Hati","Otak","Tulang",
+  "Pena","Pensil","Penggaris","Gunting","Lem","Kertas","Amplop","Buku Tulis","Rautan","Tas",
+  "Komputer","Telepon","Tablet","Kamera","Televisi","Radio","Lampu","Kipas","AC","Kulkas",
+  "Lari","Jalan","Renang","Terbang","Menari","Bermain","Membaca","Menulis","Melukis","Bernyanyi",
+];
+
+const S = {
+  myId: localStorage.getItem('cdn_id')||genId(),
+  myName:'',roomCode:'',isHost:false,mode:'online',
+  room:null,unsubFn:null,myTeam:null,
+  clueWord:'',clueNum:1,guessesLeft:0,
+};
+localStorage.setItem('cdn_id',S.myId);
+
+let db=null;
+function initFB(){
+  try{
+    if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;
+    if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+    db=firebase.database();return true;
+  }catch(e){return false;}
+}
+const FB=initFB();
+
+function genId(){return'c'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function saveSession(c,h){try{localStorage.setItem('session_room_'+ROOM_PREFIX,c);localStorage.setItem('session_host_'+ROOM_PREFIX,h?'1':'0');}catch(e){}}
+function clearSession(){try{localStorage.removeItem('session_room_'+ROOM_PREFIX);localStorage.removeItem('session_host_'+ROOM_PREFIX);}catch(e){}}
+
+async function cleanupOldRooms(){
+  if(!db)return;
+  try{
+    const snap=await db.ref(ROOM_PREFIX).once('value');
+    if(!snap.exists())return;
+    const rooms=snap.val();const now=Date.now();const ps=[];
+    Object.entries(rooms).forEach(([code,room])=>{
+      const age=now-(room.createdAt||0);
+      if(age>6*60*60*1000||(room.status==='ended'&&age>30*60*1000))ps.push(db.ref(`${ROOM_PREFIX}/${code}`).remove());
+    });
+    if(ps.length)await Promise.all(ps);
+  }catch(e){}
+}
+async function tryResumeSession(){
+  if(!FB||!db)return false;
+  let code;try{code=localStorage.getItem('session_room_'+ROOM_PREFIX);}catch(e){return false;}
+  if(!code)return false;
+  const isHost=localStorage.getItem('session_host_'+ROOM_PREFIX)==='1';
+  try{
+    const snap=await Promise.race([
+      db.ref(`${ROOM_PREFIX}/${code}`).once('value'),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
+    ]);
+    if(!snap.exists()){clearSession();return false;}
+    const room=snap.val();
+    if(room.status==='ended'){clearSession();return false;}
+    if(!room.players||!room.players[S.myId]){clearSession();return false;}
+    const me=room.players[S.myId];
+    S.myTeam=me.team||null;S.roomCode=code;S.isHost=isHost;S.mode='online';fbListen(code);return true;
+  }catch(e){clearSession();return false;}
+}
+
+function buildBoard(){
+  const words=shuffle(WORD_POOL).slice(0,25);
+  // Red starts: 9 words, Blue: 8, Neutral: 7, Assassin: 1
+  const types=shuffle([
+    ...Array(9).fill('red'),
+    ...Array(8).fill('blue'),
+    ...Array(7).fill('neutral'),
+    'assassin'
+  ]);
+  return words.map((word,i)=>({word,type:types[i],revealed:false}));
+}
+
+// ── FIREBASE OPS ─────────────────────────────────────────────────
+async function fbCreate(name){
+  let code,exists=true;
+  while(exists){code=genCode();const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');exists=s.exists()&&s.val().status!=='ended';}
+  const now=Date.now();
+  await db.ref(`${ROOM_PREFIX}/${code}`).set({
+    code,hostId:S.myId,status:'lobby',createdAt:now,
+    currentTurn:'red',clueWord:null,clueNum:0,guessesLeft:0,
+    board:null,winner:null,winReason:'',
+    redScore:9,blueScore:8,
+    players:{[S.myId]:{name,team:null,isSpymaster:false,joinedAt:now}}
+  });
+  return code;
+}
+async function fbJoin(code,name){
+  const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');
+  if(!s.exists())throw new Error('Room tidak ditemukan');
+  const r=s.val();
+  if(r.status!=='lobby')throw new Error('Game sudah dimulai');
+  if(Object.keys(r.players||{}).length>=16)throw new Error('Room penuh');
+  if(r.players&&r.players[S.myId]){await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}/name`).set(name);return r;}
+  await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}`).set({name,team:null,isSpymaster:false,joinedAt:Date.now()});
+  return r;
+}
+function fbListen(code){
+  if(S.unsubFn)S.unsubFn();
+  saveSession(code,S.isHost);
+  const ref=db.ref(`${ROOM_PREFIX}/${code}`);
+  const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});
+  S.unsubFn=()=>ref.off('value',h);
+}
+async function fbJoinTeam(team,isSpymaster){
+  const r=S.room;const ps=r.players||{};
+  // Validate spymaster slot
+  if(isSpymaster){
+    const existing=Object.entries(ps).find(([id,p])=>p.team===team&&p.isSpymaster&&id!==S.myId);
+    if(existing){toast('Slot spymaster sudah terisi!');return;}
+  }
+  S.myTeam=team;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}/players/${S.myId}`).update({team,isSpymaster:!!isSpymaster});
+}
+async function fbStartGame(){
+  const r=S.room,ps=r.players||{};
+  const redSpy=Object.values(ps).find(p=>p.team==='red'&&p.isSpymaster);
+  const blueSpy=Object.values(ps).find(p=>p.team==='blue'&&p.isSpymaster);
+  const redTeam=Object.values(ps).filter(p=>p.team==='red');
+  const blueTeam=Object.values(ps).filter(p=>p.team==='blue');
+  if(!redSpy)  {toast('Tim Merah belum ada spymaster!');return;}
+  if(!blueSpy) {toast('Tim Biru belum ada spymaster!');return;}
+  if(redTeam.length<1||blueTeam.length<1){toast('Tiap tim minimal 1 orang!');return;}
+  const board=buildBoard();
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({
+    status:'game',board,currentTurn:'red',
+    clueWord:null,clueNum:0,guessesLeft:0,
+    redScore:9,blueScore:8,winner:null,winReason:''
+  });
+}
+async function fbGiveClue(){
+  const w=(S.clueWord||'').trim();const n=parseInt(S.clueNum)||1;
+  if(!w){toast('Tulis kata petunjuk!');return;}
+  if(w.toLowerCase().includes(' ')){toast('Hanya 1 kata!');return;}
+  const r=S.room;const me=r.players[S.myId];
+  // Check not a board word
+  const board=r.board||[];
+  if(board.some(t=>!t.revealed&&t.word.toLowerCase()===w.toLowerCase())){toast('Kata itu ada di papan!');return;}
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({clueWord:w,clueNum:n,guessesLeft:n+1,status:'guessing'});
+}
+async function fbGuess(idx){
+  const r=S.room;const me=r.players[S.myId];
+  if(!me||me.team!==r.currentTurn||me.isSpymaster)return;
+  if(r.status!=='guessing'||r.guessesLeft<=0)return;
+  const board=[...r.board];const tile=board[idx];
+  if(tile.revealed)return;
+  board[idx]={...tile,revealed:true};
+  const u={board};
+  // Check result
+  if(tile.type==='assassin'){
+    const winner=r.currentTurn==='red'?'blue':'red';
+    u.winner=winner;u.winReason='Tim '+(r.currentTurn==='red'?'Merah':'Biru')+' menginjak kata assassin!';u.status='ended';
+    clearSession();
+  } else if(tile.type===r.currentTurn){
+    const remaining=board.filter(t=>!t.revealed&&t.type===r.currentTurn).length;
+    const scoreFld=r.currentTurn+'Score';u[scoreFld]=remaining;
+    if(remaining===0){u.winner=r.currentTurn;u.winReason='Tim '+(r.currentTurn==='red'?'Merah':'Biru')+' berhasil menemukan semua kata!';u.status='ended';clearSession();}
+    else{const gl=(r.guessesLeft||1)-1;u.guessesLeft=gl;if(gl<=0)u.status='game';}
+  } else {
+    // Wrong tile — end turn
+    const scoreFld=tile.type+'Score';
+    if(tile.type!=='neutral') u[scoreFld]=(r[tile.type+'Score']||0)-1;
+    if(tile.type==='red'&&u.redScore===0||tile.type==='blue'&&u.blueScore===0){
+      u.winner=tile.type;u.winReason='Semua kata tim '+(tile.type==='red'?'Merah':'Biru')+' sudah terungkap!';u.status='ended';clearSession();
+    } else u.status='game';
+  }
+  if(!u.winner) u.currentTurn=u.status==='guessing'?r.currentTurn:(r.currentTurn==='red'?'blue':'red');
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+}
+async function fbEndTurn(){
+  const r=S.room;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({
+    currentTurn:r.currentTurn==='red'?'blue':'red',
+    status:'game',guessesLeft:0
+  });
+}
+async function fbPlayAgain(){
+  if(!S.isHost)return;
+  const r=S.room;const pids=Object.keys(r.players);const u={};
+  pids.forEach(id=>{u[`players/${id}/team`]=null;u[`players/${id}/isSpymaster`]=false;});
+  u.status='lobby';u.board=null;u.currentTurn='red';u.clueWord=null;u.clueNum=0;u.guessesLeft=0;u.winner=null;u.winReason='';u.redScore=9;u.blueScore=8;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);S.myTeam=null;
+}
+async function fbKick(tid){
+  if(!S.isHost||tid===S.myId)return;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');
+}
+
+function renderPhase(){
+  const r=S.room;if(!r)return;
+  if(r.status==='lobby')return rLobby();
+  if(r.status==='game'||r.status==='guessing')return rGame();
+  if(r.status==='ended')return rEnded();
+}
+
+function rHome(){
+  render(`
+    <div class="ph" style="margin-top:8px">
+      <div class="ey">🔤 Tebak Kata</div>
+      <h1>Codenames</h1>
+      <div class="sub">Game strategi tim, temukan kata-kata tim-mu!</div>
+    </div>
+    <div class="card">
+      <div class="lbl">Nama kamu</div>
+      <input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}"
+        oninput="S.myName=this.value.trim()">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">
+        ${FB?'<span style="color:var(--green)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi — game ini butuh online</span>'}
+      </div>
+    </div>
+    ${FB?`
+    <div class="card c-blue">
+      <div class="lbl">🌐 Buat / Join Room</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Min 4 pemain (2 per tim, masing-masing butuh 1 spymaster)</p>
+      <button class="btn btn-blue" onclick="onCreate()">+ Buat Room Baru</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+      <button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button>
+    </div>
+    <div class="card" style="padding:14px">
+      <div class="lbl">Cara Main</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Dua tim: 🔴 Merah vs 🔵 Biru. Tiap tim punya 1 <b style="color:var(--text)">Spymaster</b> yang tau lokasi semua kata. Spymaster kasih petunjuk 1 kata + angka. Tim tebak kata sebanyak angka itu. <b style="color:var(--red)">Hindar kata Assassin ☠️!</b></p>
+    </div>`:'<div class="card c-red"><p style="font-size:13px;color:var(--red)">Game ini butuh Firebase untuk dimainkan. Setup Firebase di config.js dulu ya!</p></div>'}
+    <button class="btn btn-ghost" onclick="document.getElementById('guide').style.display='block'" style="margin-top:4px">📖 Cara Main</button>
+    <button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:6px">← Kembali ke Hub</button>
+  `);
+  setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);
+}
+
+async function onCreate(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  if(!n){toast('Masukkan namamu!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);
+  try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';S.myTeam=null;fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+async function onJoin(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  const c=($('ci')?.value||'').toUpperCase().trim();
+  if(!n){toast('Masukkan namamu!');return;}
+  if(c.length!==4){toast('Kode harus 4 huruf!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);
+  try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';S.myTeam=null;fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+function leaveRoom(){if(S.unsubFn){S.unsubFn();S.unsubFn=null;}clearSession();S.room=null;S.roomCode='';S.isHost=false;S.mode='online';S.myTeam=null;rHome();}
+function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+function rLobby(){
+  const r=S.room,ps=r.players||{};
+  const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+  const me=ps[S.myId];
+  const redTeam=pids.filter(id=>ps[id].team==='red');
+  const blueTeam=pids.filter(id=>ps[id].team==='blue');
+  const noTeam=pids.filter(id=>!ps[id].team);
+  const redSpy=redTeam.find(id=>ps[id].isSpymaster);
+  const blueSpy=blueTeam.find(id=>ps[id].isSpymaster);
+  const canStart=redSpy&&blueSpy&&redTeam.length>=1&&blueTeam.length>=1;
+
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>Pilih Tim & Peran</h1></div>
+    <div class="card" style="text-align:center">
+      <div class="lbl">Kode Room</div>
+      <div class="rcode">${esc(r.code)}</div>
+      <button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button>
+    </div>
+
+    ${!me?.team?`
+    <div class="card">
+      <div class="lbl">Pilih Tim & Peranmu</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-red" onclick="fbJoinTeam('red',false)" style="flex:1;margin-top:0">🔴 Tim Merah<br><small style="font-weight:400">Pemain</small></button>
+        <button class="btn" onclick="fbJoinTeam('red',true)" style="flex:1;margin-top:0;background:rgba(248,113,113,.3);border:2px solid var(--red);color:var(--red)">🔴 Tim Merah<br><small style="font-weight:400">Spymaster</small></button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-blue" onclick="fbJoinTeam('blue',false)" style="flex:1;margin-top:0">🔵 Tim Biru<br><small style="font-weight:400">Pemain</small></button>
+        <button class="btn" onclick="fbJoinTeam('blue',true)" style="flex:1;margin-top:0;background:rgba(96,165,250,.25);border:2px solid var(--blue);color:var(--blue)">🔵 Tim Biru<br><small style="font-weight:400">Spymaster</small></button>
+      </div>
+    </div>`:`
+    <div class="card" style="text-align:center;padding:14px">
+      <p style="font-size:13px;color:var(--text2)">Kamu di <b style="color:${me.team==='red'?'var(--red)':'var(--blue)'}">${me.isSpymaster?'🔍 Spymaster ':''} Tim ${me.team==='red'?'Merah':'Biru'}</b></p>
+      <button onclick="fbJoinTeam(null,false)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;margin-top:4px">Ganti tim</button>
+    </div>`}
+
+    <div style="display:flex;gap:10px">
+      <div class="card c-red" style="flex:1;padding:14px">
+        <div class="lbl" style="color:var(--red)">🔴 Tim Merah (${redTeam.length})</div>
+        ${redTeam.map(id=>`
+          <div style="font-size:13px;padding:5px 0;border-bottom:1px solid rgba(248,113,113,.15)">
+            ${ps[id].isSpymaster?'🔍 ':''}<b>${esc(ps[id].name)}</b>${id===S.myId?' (kamu)':''}
+          </div>`).join('')||'<p style="font-size:12px;color:var(--text3)">Belum ada</p>'}
+      </div>
+      <div class="card c-blue" style="flex:1;padding:14px">
+        <div class="lbl" style="color:var(--blue)">🔵 Tim Biru (${blueTeam.length})</div>
+        ${blueTeam.map(id=>`
+          <div style="font-size:13px;padding:5px 0;border-bottom:1px solid rgba(96,165,250,.15)">
+            ${ps[id].isSpymaster?'🔍 ':''}<b>${esc(ps[id].name)}</b>${id===S.myId?' (kamu)':''}
+          </div>`).join('')||'<p style="font-size:12px;color:var(--text3)">Belum ada</p>'}
+      </div>
+    </div>
+
+    ${noTeam.length>0?`
+    <div class="card" style="padding:14px">
+      <div class="lbl">Belum pilih tim</div>
+      ${noTeam.map(id=>`<span style="font-size:13px;color:var(--text2);margin-right:8px">${esc(ps[id].name)}</span>`).join('')}
+    </div>`:''}
+
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin:4px 0">
+      ${!redSpy?'⚠️ Tim Merah perlu spymaster':'✓ Spymaster Merah siap'} &nbsp;|&nbsp;
+      ${!blueSpy?'⚠️ Tim Biru perlu spymaster':'✓ Spymaster Biru siap'}
+    </div>
+
+    ${S.isHost?`<button class="btn btn-blue" ${canStart?'':'disabled'} onclick="fbStartGame()">▶ Mulai Game</button>`
+      :`<div class="card" style="text-align:center;padding:16px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:12px;color:var(--text2);margin-top:6px">Menunggu host memulai...</p></div>`}
+    <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>
+  `);
+}
+
+function rGame(){
+  const r=S.room,me=r.players[S.myId];
+  if(!me)return;
+  const isSpymaster=me.isSpymaster;const myTeam=me.team;
+  const isMyturn=r.currentTurn===myTeam;
+  const isGiving=isSpymaster&&isMyturn&&r.status==='game'&&!r.clueWord;
+  const isGuessing=!isSpymaster&&isMyturn&&r.status==='guessing';
+  const board=r.board||[];
+  const turnColor=r.currentTurn==='red'?'var(--red)':'var(--blue)';
+  const turnName=r.currentTurn==='red'?'Merah':'Biru';
+
+  // Render board
+  const tiles=board.map((tile,i)=>{
+    let cls='word-tile ';
+    if(tile.revealed){
+      cls+=`tile-${tile.type}`;
+    } else if(isSpymaster){
+      cls+=`tile-hint-${tile.type}`;
+    } else {
+      cls+='tile-unknown';
+    }
+    const clickable=isGuessing&&!tile.revealed;
+    return`<div class="${cls}" ${clickable?`onclick="fbGuess(${i})"`:''}>${esc(tile.word)}</div>`;
+  }).join('');
+
+  render(`
+    <!-- Score bar -->
+    <div class="score-bar">
+      <div class="score-team red">
+        <div class="tn">🔴 Merah</div>
+        <div class="ts">${r.redScore||0}</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+        <div style="font-size:10px;color:var(--text3);letter-spacing:1px">GILIRAN</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${turnColor}">${turnName}</div>
+        <div style="font-size:11px;color:var(--text3)">${esc(r.code)}</div>
+      </div>
+      <div class="score-team blue">
+        <div class="tn">🔵 Biru</div>
+        <div class="ts">${r.blueScore||0}</div>
+      </div>
+    </div>
+
+    <!-- Clue area -->
+    ${r.clueWord?`
+      <div class="clue-box" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:4px">KATA PETUNJUK</div>
+          <div class="clue-word">${esc(r.clueWord)}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:2px">TEBAKAN</div>
+          <div class="clue-num">${r.guessesLeft||0}</div>
+        </div>
+      </div>
+    `:isGiving?`
+      <div class="card c-${myTeam}" style="padding:14px">
+        <div class="lbl" style="color:${turnColor}">🔍 Giliranmu kasih petunjuk, Spymaster!</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+          <input id="clueW" class="inp" placeholder="Kata petunjuk..." maxlength="30" style="flex:1"
+            oninput="S.clueWord=this.value">
+          <input id="clueN" class="inp inp-num" type="number" min="1" max="9" value="2"
+            oninput="S.clueNum=parseInt(this.value)||1" style="width:70px">
+        </div>
+        <button class="btn btn-${myTeam}" onclick="S.clueWord=$('clueW')?.value;S.clueNum=parseInt($('clueN')?.value)||1;fbGiveClue()">📢 Kasih Petunjuk</button>
+      </div>
+    `:`
+      <div style="padding:10px;text-align:center;font-size:12px;color:var(--text2)">
+        ${isMyturn&&isGuessing?`✨ Giliranmu menebak!`:
+          isMyturn&&isSpymaster?`Tim-mu sedang menebak...`:
+          `Menunggu giliran tim ${r.currentTurn==='red'?'Merah':'Biru'}...`}
+      </div>
+    `}
+
+    <!-- Board -->
+    <div class="board">${tiles}</div>
+
+    <!-- Actions -->
+    ${isGuessing?`
+      <button class="btn btn-ghost" onclick="fbEndTurn()" style="margin-top:4px">⏩ Akhiri Giliran</button>
+    `:''}
+
+    <!-- Spymaster legend -->
+    ${isSpymaster?`
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;justify-content:center">
+        <span class="badge b-red">🔴 Tim Kamu (${r.currentTurn==='red'?r.redScore:r.blueScore})</span>
+        <span class="badge b-blue">🔵 Lawan (${r.currentTurn==='red'?r.blueScore:r.redScore})</span>
+        <span class="badge b-dim">⬜ Netral</span>
+        <span class="badge" style="background:#000;color:#888;border:1px solid #444">☠️ Assassin</span>
+      </div>
+    `:''}
+  `);
+}
+
+function rEnded(){
+  clearSession();
+  const r=S.room;const isWinner=r.players[S.myId]?.team===r.winner;
+  const wc=r.winner==='red'?'var(--red)':'var(--blue)';
+  render(`
+    <div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center">
+      <div style="font-size:56px;margin-bottom:10px">${r.winner==='red'?'🔴':'🔵'}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:${wc}">
+        Tim ${r.winner==='red'?'Merah':'Biru'} Menang!
+      </div>
+      <p style="font-size:13px;color:var(--text2);margin:6px 0 22px">${esc(r.winReason)}</p>
+      ${isWinner?`<div style="font-size:14px;color:${wc};font-weight:600;margin-bottom:16px">🎉 Selamat tim-mu menang!</div>`:''}
+      <div class="card">
+        <div class="lbl">Papan Akhir</div>
+        <div class="board" style="opacity:.9">
+          ${(r.board||[]).map(tile=>`
+            <div class="word-tile tile-hint-${tile.type}" style="cursor:default;${tile.revealed?'opacity:.4;text-decoration:line-through':''}">
+              ${esc(tile.word)}
+            </div>`).join('')}
+        </div>
+      </div>
+      ${S.isHost?`<button class="btn btn-blue" onclick="fbPlayAgain()">↺ Main Lagi</button>`
+        :`<div class="card" style="padding:16px;text-align:center"><div class="wp"><span></span><span></span><span></span></div></div>`}
+      <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button>
+    </div>
+  `);
+}
+
+window.onload=async()=>{
+  try{cleanupOldRooms();}catch(e){}
+  try{const r=await tryResumeSession();if(!r)rHome();}catch(e){rHome();}
+};
+</script>
+
+  <!-- GUIDE OVERLAY -->
+  <div id="guide" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);overflow-y:auto;padding:24px 16px 48px">
+    <button onclick="document.getElementById('guide').style.display='none'" style="position:fixed;top:20px;right:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#f0f4ff;cursor:pointer;z-index:201">✕ Tutup</button>
+    <div style="max-width:460px;margin:0 auto;padding-top:20px">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:48px;margin-bottom:8px">🔤</div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#93c5fd">Cara Main Tebak Kata (Codenames)</div>
+      </div>
+
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:12px">👥 Setup Tim</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px">
+          <div style="flex:1;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:4px">🔴</div>
+            <div style="font-size:12px;font-weight:700;color:#f87171">Tim Merah</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:3px">1 Spymaster + pemain</div>
+          </div>
+          <div style="flex:1;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:20px;margin-bottom:4px">🔵</div>
+            <div style="font-size:12px;font-weight:700;color:#60a5fa">Tim Biru</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:3px">1 Spymaster + pemain</div>
+          </div>
+        </div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Min 4 orang (2 per tim). <b style="color:#f0f4ff">Spymaster</b> adalah pemimpin yang tau lokasi semua kata — mereka tidak boleh kasih hint selain kata petunjuk resmi!</p>
+      </div>
+
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:12px">🎮 Alur Game</div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#60a5fa;font-weight:700;font-family:'Syne',sans-serif">1</span><span style="font-size:13px;color:#94a3b8">25 kata muncul di papan. Tim Merah punya <b style="color:#f87171">9 kata</b>, Tim Biru <b style="color:#60a5fa">8 kata</b></span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#60a5fa;font-weight:700;font-family:'Syne',sans-serif">2</span><span style="font-size:13px;color:#94a3b8"><b style="color:#f0f4ff">Spymaster</b> kasih petunjuk: <b style="color:#fbbf24">1 kata + angka</b>. Contoh: "Hewan, 2" → ada 2 kata hewan di papan</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#60a5fa;font-weight:700;font-family:'Syne',sans-serif">3</span><span style="font-size:13px;color:#94a3b8"><b style="color:#f0f4ff">Tim</b> diskusi dan tebak kata sebanyak angka yang disebutkan (boleh +1 ekstra)</span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#60a5fa;font-weight:700;font-family:'Syne',sans-serif">4</span><span style="font-size:13px;color:#94a3b8">Tebak kata lawan → giliran berpindah. Tebak netral → giliran berpindah</span></div>
+        <div style="display:flex;gap:10px"><span style="color:#60a5fa;font-weight:700;font-family:'Syne',sans-serif">5</span><span style="font-size:13px;color:#94a3b8">Tim bisa pilih berhenti nebak dan <b style="color:#f0f4ff">akhiri giliran</b> kapan saja</span></div>
+      </div>
+
+      <div style="background:rgba(0,0,0,.5);border:1px solid #444;border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#f0f4ff;font-weight:700;margin-bottom:8px">☠️ KATA ASSASSIN — PALING PENTING!</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Ada <b style="color:#f87171">1 kata assassin</b> di papan. Kalau tim salah tebak kata assassin → <b style="color:#f87171">LANGSUNG KALAH!</b> Spymaster harus pastikan petunjuknya tidak mengarah ke kata ini.</p>
+      </div>
+
+      <div style="background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#60a5fa;font-weight:700;margin-bottom:6px">🏆 Cara Menang</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Tim yang berhasil mengungkap semua kata mereka duluan = menang! Tim Merah harus ungkap 9 kata, Tim Biru 8 kata. Itulah kenapa Merah mulai duluan — sedikit lebih susah!</p>
+      </div>
+
+      <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#fbbf24;font-weight:700;margin-bottom:6px">🧠 Tips Spymaster</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Cari kata yang bisa menghubungkan <b style="color:#f0f4ff">banyak kata tim-mu sekaligus</b>. Semakin tinggi angka, semakin berisiko. Hindari kata yang mirip dengan kata lawan atau assassin!</p>
+      </div>
+
+      <button onclick="document.getElementById('guide').style.display='none'" style="display:block;width:100%;padding:15px;margin-top:4px;border:none;border-radius:14px;cursor:pointer;font-size:14px;font-weight:600;background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff">✓ Mengerti, Mulai Main!</button>
+    </div>
+  </div>
+</body>
+</html>

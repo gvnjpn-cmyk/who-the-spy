@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Never Have I Ever</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{
+      --bg:#080c10;--glass:#ffffff08;--glass2:#ffffff12;--border:#ffffff14;--border2:#ffffff22;
+      --acc:#22d3ee;--acc2:#67e8f9;--green:#4ade80;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;
+      --text:#f0f4ff;--text2:#94a3b8;--text3:#475569;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:radial-gradient(ellipse at top left,rgba(34,211,238,.08) 0%,transparent 55%),
+                 radial-gradient(ellipse at bottom right,rgba(103,232,249,.05) 0%,transparent 55%)}
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+    @keyframes tokenPop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+    .fade{animation:fadeUp .3s ease both}
+
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;
+      position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .c-cyan{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.07)}
+    .c-grn{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.07)}
+    .c-red{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.07)}
+
+    .ph{text-align:center;margin-bottom:20px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+      letter-spacing:2.5px;color:var(--acc);text-transform:uppercase;
+      background:rgba(34,211,238,.12);border:1px solid rgba(34,211,238,.25);
+      border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .divider{height:1px;background:var(--border);margin:14px 0}
+
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;padding:15px 20px;margin-top:10px;border:none;border-radius:14px;
+      cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn:active:not(:disabled){transform:scale(.97)}
+    .btn-cyan{background:linear-gradient(135deg,var(--acc),#0891b2);color:#fff;box-shadow:0 4px 20px rgba(34,211,238,.3)}
+    .btn-red{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff}
+    .btn-grn{background:linear-gradient(135deg,var(--green),#16a34a);color:#0a0a0f}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .btn-ghost:hover:not(:disabled){background:var(--glass2)}
+
+    .inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);
+      border:1.5px solid var(--border2);border-radius:12px;color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--acc)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-cyan{background:rgba(34,211,238,.15);color:var(--acc);border:1px solid rgba(34,211,238,.3)}
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border)}
+
+    .pi{display:flex;align-items:center;justify-content:space-between;
+      padding:11px 15px;margin-top:8px;border-radius:12px;
+      background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px;transition:all .2s}
+
+    .sbar{display:flex;align-items:center;justify-content:space-between;
+      padding:9px 15px;background:var(--glass);border:1px solid var(--border);
+      border-radius:13px;margin-bottom:14px;font-size:11px;font-weight:500;color:var(--text2)}
+    .sbar .rnd{color:var(--acc);font-weight:700;font-family:'Syne',sans-serif}
+    .sbar .cod{font-family:'Syne',sans-serif;font-weight:800;font-size:13px;
+      background:linear-gradient(135deg,var(--acc),var(--acc2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;
+      background:linear-gradient(135deg,var(--acc),var(--acc2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      text-align:center;letter-spacing:12px;padding:14px 0}
+
+    /* Statement card */
+    .stmt-card{border-radius:20px;padding:28px;text-align:center;margin:14px 0;
+      background:linear-gradient(135deg,rgba(34,211,238,.12),rgba(103,232,249,.06));
+      border:1.5px solid rgba(34,211,238,.3)}
+    .stmt-card .snum{font-size:11px;font-weight:700;letter-spacing:3px;color:var(--acc);text-transform:uppercase;margin-bottom:10px}
+    .stmt-card .stext{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;line-height:1.4;
+      background:linear-gradient(135deg,#fff,var(--acc2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    /* Token display */
+    .token-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+    .token{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:16px;border:2px solid;transition:all .3s}
+    .token.active{background:rgba(34,211,238,.3);border-color:var(--acc);animation:tokenPop .3s ease}
+    .token.used{background:rgba(248,113,113,.25);border-color:var(--red)}
+    .token.empty{background:rgba(255,255,255,.06);border-color:var(--text3);opacity:.4}
+
+    /* Response buttons */
+    .resp-row{display:flex;gap:10px;margin-top:12px}
+    .resp-btn{flex:1;padding:18px 10px;border:none;border-radius:14px;cursor:pointer;
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+      display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s}
+    .resp-btn:active{transform:scale(.96)}
+    .resp-pernah{background:rgba(248,113,113,.2);border:2px solid rgba(248,113,113,.4);color:var(--red)}
+    .resp-pernah:hover{background:rgba(248,113,113,.3)}
+    .resp-belum{background:rgba(74,222,128,.15);border:2px solid rgba(74,222,128,.35);color:var(--green)}
+    .resp-belum:hover{background:rgba(74,222,128,.25)}
+    .resp-btn.chosen-pernah{background:rgba(248,113,113,.35);border-color:var(--red)}
+    .resp-btn.chosen-belum{background:rgba(74,222,128,.3);border-color:var(--green)}
+
+    .wp{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .wp span{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulseDot .9s ease-in-out infinite}
+    .wp span:nth-child(2){animation-delay:.15s}.wp span:nth-child(3){animation-delay:.3s}
+
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(34,211,238,.2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);
+      background:rgba(5,12,16,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1.5px solid rgba(34,211,238,.4);border-radius:14px;
+      padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;
+      transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .count-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);
+      background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;
+      background:linear-gradient(135deg,var(--text),var(--acc));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  </style>
+</head>
+<body>
+<div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const ROOM_PREFIX = 'nhie_rooms';
+const START_TOKENS = 5;
+
+const STATEMENTS = [
+  "Never have I ever… tidur di kelas / rapat",
+  "Never have I ever… nge-ghosting seseorang",
+  "Never have I ever… pura-pura sakit biar gak masuk",
+  "Never have I ever… stalking mantan di sosmed",
+  "Never have I ever… ketahuan bohong oleh orang tua",
+  "Never have I ever… jatuh di depan banyak orang",
+  "Never have I ever… nangis karena film / drakor",
+  "Never have I ever… chat ke orang yang salah",
+  "Never have I ever… makan makanan orang lain diam-diam",
+  "Never have I ever… kabur dari tagihan / bon",
+  "Never have I ever… kirim pesan ke eks yang salah",
+  "Never have I ever… foto selfie lebih dari 20x buat 1 post",
+  "Never have I ever… pura-pura tidak dengar ketika dipanggil",
+  "Never have I ever… beli barang mahal tapi bilang murah ke ortu",
+  "Never have I ever… lupa nama orang yang baru dikenal",
+  "Never have I ever… nonton series seharian tanpa berhenti",
+  "Never have I ever… blokir seseorang lalu unblok lagi",
+  "Never have I ever… oversharing di sosmed terus nyesel",
+  "Never have I ever… baca pesan orang lain tanpa izin",
+  "Never have I ever… pura-pura ketawa padahal nggak ngerti",
+  "Never have I ever… beli minuman mahal karena aesthetic",
+  "Never have I ever… save foto orang tanpa bilang",
+  "Never have I ever… ngarang alasan biar gak ikut kumpul",
+  "Never have I ever… chat bokek ke teman tapi nolak bayar duluan",
+  "Never have I ever… minta rekomendasi tempat makan tapi gak jadi pergi",
+  "Never have I ever… screenshot chat orang lain untuk dikirim ke yang lain",
+  "Never have I ever… telat lebih dari 1 jam ke janji",
+  "Never have I ever… pura-pura tidak ada di rumah saat ada tamu",
+  "Never have I ever… nge-like foto lama seseorang saat stalking",
+  "Never have I ever… batalkan rencana di hari H",
+];
+
+const S = {
+  myId: localStorage.getItem('nhie_id')||genId(),
+  myName:'',roomCode:'',isHost:false,mode:'online',
+  room:null,unsubFn:null,
+  oPlayers:[],oStmts:[],oIdx:0,
+  oCount:4,oNames:Array.from({length:20},(_,i)=>`Pemain ${i+1}`),
+};
+localStorage.setItem('nhie_id',S.myId);
+
+let db=null;
+function initFB(){
+  try{
+    if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;
+    if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);
+    db=firebase.database();return true;
+  }catch(e){return false;}
+}
+const FB=initFB();
+
+function genId(){return'n'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function saveSession(c,h){try{localStorage.setItem('session_room_'+ROOM_PREFIX,c);localStorage.setItem('session_host_'+ROOM_PREFIX,h?'1':'0');}catch(e){}}
+function clearSession(){try{localStorage.removeItem('session_room_'+ROOM_PREFIX);localStorage.removeItem('session_host_'+ROOM_PREFIX);}catch(e){}}
+
+async function cleanupOldRooms(){
+  if(!db)return;
+  try{
+    const snap=await db.ref(ROOM_PREFIX).once('value');
+    if(!snap.exists())return;
+    const rooms=snap.val();const now=Date.now();const ps=[];
+    Object.entries(rooms).forEach(([code,room])=>{
+      const age=now-(room.createdAt||0);
+      if(age>6*60*60*1000||(room.status==='ended'&&age>30*60*1000))ps.push(db.ref(`${ROOM_PREFIX}/${code}`).remove());
+    });
+    if(ps.length)await Promise.all(ps);
+  }catch(e){}
+}
+async function tryResumeSession(){
+  if(!FB||!db)return false;
+  let code;try{code=localStorage.getItem('session_room_'+ROOM_PREFIX);}catch(e){return false;}
+  if(!code)return false;
+  const isHost=localStorage.getItem('session_host_'+ROOM_PREFIX)==='1';
+  try{
+    const snap=await Promise.race([
+      db.ref(`${ROOM_PREFIX}/${code}`).once('value'),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))
+    ]);
+    if(!snap.exists()){clearSession();return false;}
+    const room=snap.val();
+    if(room.status==='ended'){clearSession();return false;}
+    if(!room.players||!room.players[S.myId]){clearSession();return false;}
+    S.roomCode=code;S.isHost=isHost;S.mode='online';fbListen(code);return true;
+  }catch(e){clearSession();return false;}
+}
+
+// ── FIREBASE OPS ─────────────────────────────────────────────────
+async function fbCreate(name){
+  let code,exists=true;
+  while(exists){code=genCode();const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');exists=s.exists()&&s.val().status!=='ended';}
+  const stmts=shuffle(STATEMENTS).slice(0,15);const now=Date.now();
+  await db.ref(`${ROOM_PREFIX}/${code}`).set({
+    code,hostId:S.myId,status:'lobby',round:0,statements:stmts,currentStmt:null,responses:null,createdAt:now,
+    players:{[S.myId]:{name,joinedAt:now,tokens:START_TOKENS,hasResponded:false}}
+  });
+  return code;
+}
+async function fbJoin(code,name){
+  const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');
+  if(!s.exists())throw new Error('Room tidak ditemukan');
+  const r=s.val();
+  if(r.status==='ended')throw new Error('Game sudah berakhir');
+  if(Object.keys(r.players||{}).length>=20)throw new Error('Room penuh');
+  if(r.players&&r.players[S.myId]){await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}/name`).set(name);return r;}
+  await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}`).set({name,joinedAt:Date.now(),tokens:START_TOKENS,hasResponded:false});
+  return r;
+}
+function fbListen(code){
+  if(S.unsubFn)S.unsubFn();
+  saveSession(code,S.isHost);
+  const ref=db.ref(`${ROOM_PREFIX}/${code}`);
+  const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});
+  S.unsubFn=()=>ref.off('value',h);
+}
+async function fbStart(){
+  const r=S.room,pids=Object.keys(r.players);
+  if(pids.length<2){toast('Minimal 2 pemain!');return;}
+  const u={};pids.forEach(id=>{u[`players/${id}/tokens`]=START_TOKENS;u[`players/${id}/hasResponded`]=false;});
+  u.status='statement';u.round=1;u.currentStmt=r.statements[0];u.responses=null;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+}
+async function fbRespond(pernah){
+  const r=S.room,me=r.players[S.myId];
+  if(me?.hasResponded)return;
+  const u={[`responses/${S.myId}`]:pernah?'pernah':'belum',[`players/${S.myId}/hasResponded`]:true};
+  if(pernah&&(me?.tokens||0)>0) u[`players/${S.myId}/tokens`]=(me.tokens||0)-1;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+  const s=await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).once('value');
+  const room=s.val();
+  if(Object.values(room.players).every(p=>p.hasResponded)){
+    await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({status:'reveal'});
+  }
+}
+async function fbNext(){
+  if(!S.isHost)return;
+  const r=S.room;const nextR=(r.round||0)+1;const stmts=r.statements||[];
+  // Check if anyone is out of tokens
+  const eliminated=Object.entries(r.players).filter(([,p])=>(p.tokens||0)<=0).map(([,p])=>p.name);
+  if(nextR>stmts.length||Object.values(r.players).every(p=>(p.tokens||0)<=0)){
+    await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({status:'ended'});clearSession();return;
+  }
+  const pids=Object.keys(r.players);const u={};
+  pids.forEach(id=>{u[`players/${id}/hasResponded`]=false;});
+  u.status='statement';u.round=nextR;u.currentStmt=stmts[nextR-1];u.responses=null;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+}
+async function fbPlayAgain(){
+  if(!S.isHost)return;
+  const r=S.room;const pids=Object.keys(r.players);
+  const stmts=shuffle(STATEMENTS).slice(0,15);const u={};
+  pids.forEach(id=>{u[`players/${id}/tokens`]=START_TOKENS;u[`players/${id}/hasResponded`]=false;});
+  u.status='lobby';u.round=0;u.statements=stmts;u.currentStmt=null;u.responses=null;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+}
+async function fbKick(tid){
+  if(!S.isHost||tid===S.myId)return;
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');
+}
+
+function renderPhase(){
+  if(S.mode==='offline'){renderOff();return;}
+  const r=S.room;if(!r)return;
+  if(r.status==='lobby')    return rLobby();
+  if(r.status==='statement')return rStatement();
+  if(r.status==='reveal')   return rReveal();
+  if(r.status==='ended')    return rEnded();
+}
+
+function rHome(){
+  render(`
+    <div class="ph" style="margin-top:8px">
+      <div class="ey">🙅 Never Have I Ever</div>
+      <h1>Pilih Mode Main</h1>
+    </div>
+    <div class="card">
+      <div class="lbl">Nama kamu</div>
+      <input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}"
+        oninput="S.myName=this.value.trim()">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">
+        ${FB?'<span style="color:var(--green)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi</span>'}
+      </div>
+    </div>
+    ${FB?`
+    <div class="card c-cyan">
+      <div class="lbl">🌐 Online Multiplayer</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Tiap pemain jawab dari HP masing-masing</p>
+      <button class="btn btn-cyan" onclick="onCreate()">+ Buat Room Baru</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div>
+      <input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')">
+      <button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button>
+    </div>`:''}
+    <div class="card">
+      <div class="lbl">📱 Offline</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Baca statement, angkat tangan siapa yang pernah</p>
+      <button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline</button>
+    </div>
+    <div class="card" style="padding:14px">
+      <div class="lbl">Cara Main</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Tiap pemain punya <b style="color:var(--acc2)">5 token 🪙</b>. Setiap "pernah" melakukan statement → token berkurang 1. Habis token = <b style="color:var(--red)">eliminasi!</b> Bertahan paling lama = menang!</p>
+    </div>
+    <button class="btn btn-ghost" onclick="document.getElementById('guide').style.display='block'" style="margin-top:4px">📖 Cara Main</button>
+    <button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:6px">← Kembali ke Hub</button>
+  `);
+  setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);
+}
+
+async function onCreate(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  if(!n){toast('Masukkan namamu!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);
+  try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+async function onJoin(){
+  const n=($('ni')?.value||'').trim()||S.myName;
+  const c=($('ci')?.value||'').toUpperCase().trim();
+  if(!n){toast('Masukkan namamu!');return;}
+  if(c.length!==4){toast('Kode harus 4 huruf!');return;}
+  S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);
+  try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}
+  catch(e){toast('Gagal: '+e.message);rHome();}
+}
+function onOffline(){S.myName=($('ni')?.value||'').trim()||S.myName||'Host';S.mode='offline';rOffSetup();}
+function leaveRoom(){if(S.unsubFn){S.unsubFn();S.unsubFn=null;}clearSession();S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();}
+function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+function makeTokens(tokens,max=START_TOKENS){
+  let h='';
+  for(let i=0;i<max;i++){
+    if(i<tokens) h+=`<div class="token active">🪙</div>`;
+    else h+=`<div class="token used">💀</div>`;
+  }
+  return h;
+}
+
+function rLobby(){
+  const r=S.room,ps=r.players||{};
+  const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>Waiting Room</h1></div>
+    <div class="card" style="text-align:center">
+      <div class="lbl">Kode Room</div>
+      <div class="rcode">${esc(r.code)}</div>
+      <button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="lbl" style="margin:0">Pemain</div>
+        <span class="badge b-cyan">${pids.length}/20</span>
+      </div>
+      ${pids.map(id=>`
+        <div class="pi">
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-weight:500">${esc(ps[id].name)}</span>
+            ${id===r.hostId?'<span class="badge b-cyan">Host</span>':''}
+            ${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}
+          </div>
+          ${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600">Kick</button>`:'<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>'}
+        </div>`).join('')}
+      <div style="font-size:12px;color:var(--text2);margin-top:10px;text-align:center">
+        Tiap pemain mulai dengan ${START_TOKENS} 🪙 token
+      </div>
+    </div>
+    ${S.isHost?`<button class="btn btn-cyan" ${pids.length>=2?'':'disabled'} onclick="fbStart()">▶ Mulai Game · ${pids.length} Pemain</button>`
+      :`<div class="card" style="text-align:center;padding:20px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host memulai...</p></div>`}
+    <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>
+  `);
+}
+
+function rStatement(){
+  const r=S.room,me=r.players[S.myId];
+  const ps=r.players;const pids=Object.keys(ps);
+  const rc=Object.values(ps).filter(p=>p.hasResponded).length;
+  const myTokens=me?.tokens||0;const isElim=myTokens<=0;
+  render(`
+    <div class="sbar fade">
+      <span class="rnd">Pernyataan ${r.round}/${(r.statements||[]).length}</span>
+      <span class="cod">${esc(r.code)}</span>
+    </div>
+    <div class="stmt-card">
+      <div class="snum">NEVER HAVE I EVER...</div>
+      <div class="stext">${esc(r.currentStmt)}</div>
+    </div>
+    <div class="card" style="text-align:center;padding:16px">
+      <div class="lbl">Token-mu</div>
+      <div class="token-grid">${makeTokens(myTokens)}</div>
+      <div style="font-size:12px;color:${myTokens<=1?'var(--red)':'var(--text3)'};margin-top:6px">
+        ${myTokens<=0?'❌ Kamu eliminasi!':myTokens===1?'⚠️ Token terakhir!':myTokens+' token tersisa'}
+      </div>
+    </div>
+    ${me?.hasResponded?`
+      <div class="card c-grn" style="text-align:center;padding:20px">
+        <p style="color:var(--green);font-weight:600">✓ Jawaban terkirim!</p>
+        <p style="font-size:13px;color:var(--text2);margin-top:4px">${rc}/${pids.length} sudah jawab</p>
+      </div>
+    `:isElim?`
+      <div class="card c-red" style="text-align:center;padding:20px">
+        <p style="font-size:14px;color:var(--red);font-weight:600">❌ Kamu sudah eliminasi!</p>
+        <p style="font-size:12px;color:var(--text2);margin-top:4px">Token habis, tonton saja</p>
+      </div>
+    `:`
+      <div class="resp-row">
+        <button class="resp-btn resp-pernah" onclick="fbRespond(true)">
+          <span style="font-size:24px">✋</span>
+          <span>PERNAH</span>
+          <span style="font-size:10px;opacity:.7;font-weight:400">−1 token</span>
+        </button>
+        <button class="resp-btn resp-belum" onclick="fbRespond(false)">
+          <span style="font-size:24px">🤞</span>
+          <span>BELUM PERNAH</span>
+          <span style="font-size:10px;opacity:.7;font-weight:400">aman!</span>
+        </button>
+      </div>
+    `}
+  `);
+}
+
+function rReveal(){
+  const r=S.room,ps=r.players;
+  const resp=r.responses||{};
+  const pernah=Object.entries(resp).filter(([,v])=>v==='pernah').map(([id])=>id);
+  const belum=Object.entries(resp).filter(([,v])=>v==='belum').map(([id])=>id);
+  render(`
+    <div class="sbar fade">
+      <span class="rnd">Pernyataan ${r.round}/${(r.statements||[]).length}</span>
+      <span class="cod">${esc(r.code)}</span>
+    </div>
+    <div class="stmt-card" style="padding:20px">
+      <div class="snum">NEVER HAVE I EVER...</div>
+      <div class="stext">${esc(r.currentStmt)}</div>
+    </div>
+    <div class="card c-red">
+      <div class="lbl" style="color:var(--red)">✋ Pernah (−1 token)</div>
+      ${pernah.length===0?`<p style="font-size:13px;color:var(--text2)">Tidak ada yang pernah!</p>`
+        :pernah.map(id=>`
+          <div class="pi">
+            <span style="font-weight:500">${esc(ps[id]?.name||'?')}</span>
+            <div class="token-grid" style="gap:4px">${makeTokens(ps[id]?.tokens||0)}</div>
+          </div>`).join('')}
+    </div>
+    <div class="card c-grn">
+      <div class="lbl" style="color:var(--green)">🤞 Belum Pernah (aman)</div>
+      ${belum.length===0?`<p style="font-size:13px;color:var(--text2)">Semua pernah!</p>`
+        :belum.map(id=>`
+          <div class="pi">
+            <span style="font-weight:500">${esc(ps[id]?.name||'?')}</span>
+            <div class="token-grid" style="gap:4px">${makeTokens(ps[id]?.tokens||0)}</div>
+          </div>`).join('')}
+    </div>
+    ${S.isHost?`<button class="btn btn-cyan" onclick="fbNext()">${(r.round||0)<(r.statements||[]).length?'→ Pernyataan Berikutnya':'🏁 Selesai'}</button>`
+      :`<div class="card" style="text-align:center;padding:16px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:12px;color:var(--text2);margin-top:6px">Menunggu host...</p></div>`}
+  `);
+}
+
+function rEnded(){
+  clearSession();
+  const r=S.room,ps=r.players;
+  const sorted=Object.entries(ps).sort((a,b)=>(b[1].tokens||0)-(a[1].tokens||0));
+  const medals=['🥇','🥈','🥉'];
+  render(`
+    <div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center">
+      <div style="font-size:56px;margin-bottom:10px">🙅</div>
+      <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">Game Selesai!</div>
+      <p style="font-size:13px;color:var(--text2);margin:6px 0 22px">Yang paling suci... dan paling ketahuan!</p>
+      <div class="card" style="text-align:left">
+        <div class="lbl">Sisa Token</div>
+        ${sorted.map(([id,p],i)=>`
+          <div class="pi" style="${i===0?'border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)':''}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text3)">${medals[i]||''}</span>
+              <span style="font-weight:500">${esc(p.name)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span>
+            </div>
+            <div class="token-grid" style="gap:4px">${makeTokens(p.tokens||0)}</div>
+          </div>`).join('')}
+      </div>
+      ${S.isHost?`<button class="btn btn-cyan" onclick="fbPlayAgain()">↺ Main Lagi</button>`
+        :`<div class="card" style="padding:16px;text-align:center"><div class="wp"><span></span><span></span><span></span></div></div>`}
+      <button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button>
+    </div>
+  `);
+}
+
+// ── OFFLINE ──────────────────────────────────────────────────────
+function rOffSetup(){
+  render(`
+    <div class="ph" style="margin-top:6px"><div class="ey">Offline</div><h1>Setup Pemain</h1></div>
+    <div class="card">
+      <div class="lbl">Jumlah Pemain</div>
+      <div class="count-sel">
+        <button class="count-btn" onclick="oChg(-1)">−</button>
+        <div id="ocd" class="count-num">${S.oCount}</div>
+        <button class="count-btn" onclick="oChg(1)">+</button>
+      </div>
+      <div class="divider"></div>
+      <div class="lbl">Nama Pemain</div>
+      <div id="onl"></div>
+      <button class="btn btn-cyan" onclick="oStart()" style="margin-top:14px">▶ Mulai Game</button>
+    </div>
+    <button class="btn btn-ghost" onclick="rHome()">← Kembali</button>
+  `);
+  renderONames();
+}
+function oChg(d){S.oCount=Math.max(2,Math.min(20,S.oCount+d));$('ocd').textContent=S.oCount;renderONames();}
+function renderONames(){
+  const c=$('onl');if(!c)return;
+  c.innerHTML=Array.from({length:S.oCount},(_,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span>
+      <input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}"
+        oninput="S.oNames[${i}]=this.value.trim()" placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px">
+    </div>`).join('');
+}
+function oStart(){
+  const names=S.oNames.slice(0,S.oCount).map((n,i)=>n||`Pemain ${i+1}`);
+  S.oPlayers=names.map((name,i)=>({id:i,name,tokens:START_TOKENS,pernah:[]}));
+  S.oStmts=shuffle(STATEMENTS).slice(0,15);S.oIdx=0;S.oPhase='statement';
+  renderOff();
+}
+function renderOff(){
+  if(S.oPhase==='statement')return rOStatement();
+  if(S.oPhase==='ended')    return rOEnded();
+}
+function rOStatement(){
+  const stmt=S.oStmts[S.oIdx];const active=S.oPlayers.filter(p=>p.tokens>0);
+  render(`
+    <div class="sbar fade"><span class="rnd">Pernyataan ${S.oIdx+1}/15</span><span style="color:var(--text3);font-size:12px">Offline</span></div>
+    <div class="stmt-card"><div class="snum">NEVER HAVE I EVER...</div><div class="stext">${esc(stmt)}</div></div>
+    <div class="card">
+      <div class="lbl">Status Pemain</div>
+      ${S.oPlayers.map(p=>`
+        <div class="pi">
+          <span style="font-weight:500;${p.tokens<=0?'text-decoration:line-through;opacity:.4':''}">${esc(p.name)}</span>
+          <div class="token-grid" style="gap:4px">${makeTokens(p.tokens)}</div>
+        </div>`).join('')}
+    </div>
+    <div class="card" style="padding:14px">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Baca statement, siapa yang pernah angkat tangan dan kurangi token mereka:</p>
+      ${active.map(p=>`
+        <button onclick="oMark(${p.id})" style="display:flex;align-items:center;justify-content:space-between;
+          width:100%;padding:11px 15px;margin-bottom:6px;border:1.5px solid var(--border);border-radius:12px;
+          background:rgba(255,255,255,.04);cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px">
+          <span>✋ ${esc(p.name)} pernah</span>
+          <span style="color:var(--red);font-weight:600">−1 🪙</span>
+        </button>`).join('')}
+    </div>
+    <button class="btn btn-cyan" onclick="oNextStmt()">→ Lanjut</button>
+  `);
+}
+function oMark(pid){
+  const p=S.oPlayers.find(x=>x.id===pid);if(!p||p.tokens<=0)return;
+  p.tokens--;rOStatement();
+}
+function oNextStmt(){
+  S.oIdx++;
+  const active=S.oPlayers.filter(p=>p.tokens>0);
+  if(S.oIdx>=S.oStmts.length||active.length<=1){S.oPhase='ended';renderOff();return;}
+  renderOff();
+}
+function rOEnded(){
+  const sorted=[...S.oPlayers].sort((a,b)=>b.tokens-a.tokens);const medals=['🥇','🥈','🥉'];
+  render(`
+    <div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center">
+      <div style="font-size:56px;margin-bottom:10px">🙅</div>
+      <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">Game Selesai!</div>
+      <p style="font-size:13px;color:var(--text2);margin:6px 0 22px">Yang paling suci...</p>
+      <div class="card" style="text-align:left">
+        ${sorted.map((p,i)=>`
+          <div class="pi" style="${i===0?'border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.08)':''}">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">${medals[i]||''}</span>
+              <span style="font-weight:500">${esc(p.name)}</span>
+            </div>
+            <div class="token-grid" style="gap:4px">${makeTokens(p.tokens)}</div>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-cyan" onclick="oStart()">↺ Main Lagi</button>
+      <button class="btn btn-ghost" onclick="S.mode='online';rHome()" style="margin-top:6px">← Menu Utama</button>
+    </div>
+  `);
+}
+
+window.onload=async()=>{
+  try{cleanupOldRooms();}catch(e){}
+  try{const r=await tryResumeSession();if(!r)rHome();}catch(e){rHome();}
+};
+</script>
+
+  <!-- GUIDE OVERLAY -->
+  <div id="guide" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);overflow-y:auto;padding:24px 16px 48px">
+    <button onclick="document.getElementById('guide').style.display='none'" style="position:fixed;top:20px;right:20px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:100px;padding:8px 16px;font-size:13px;font-weight:600;color:#f0f4ff;cursor:pointer;z-index:201">✕ Tutup</button>
+    <div style="max-width:460px;margin:0 auto;padding-top:20px">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:48px;margin-bottom:8px">🙅</div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#67e8f9">Cara Main Never Have I Ever</div>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:12px">🪙 Token System</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.7">Tiap pemain mulai dengan <b style="color:#67e8f9">5 token 🪙</b>. Setiap kamu <b style="color:#f87171">"pernah"</b> melakukan statement → token berkurang 1. Kalau token habis = <b style="color:#f87171">ELIMINASI!</b> Yang punya token tersisa paling banyak di akhir = menang!</p>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:18px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;color:#475569;text-transform:uppercase;margin-bottom:12px">🔄 Alur Per Ronde</div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#22d3ee;font-weight:700;font-family:'Syne',sans-serif">1</span><span style="font-size:13px;color:#94a3b8">Statement muncul: <b style="color:#f0f4ff">"Never have I ever..."</b></span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#22d3ee;font-weight:700;font-family:'Syne',sans-serif">2</span><span style="font-size:13px;color:#94a3b8">Tiap pemain jawab jujur: <b style="color:#f87171">PERNAH</b> atau <b style="color:#4ade80">BELUM PERNAH</b></span></div>
+        <div style="display:flex;gap:10px;margin-bottom:8px"><span style="color:#22d3ee;font-weight:700;font-family:'Syne',sans-serif">3</span><span style="font-size:13px;color:#94a3b8">Jawaban semua orang di-reveal bersamaan — waktu paling seru! 😳</span></div>
+        <div style="display:flex;gap:10px"><span style="color:#22d3ee;font-weight:700;font-family:'Syne',sans-serif">4</span><span style="font-size:13px;color:#94a3b8">Yang jawab "pernah" kehilangan 1 token</span></div>
+      </div>
+      <div style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#22d3ee;font-weight:700;margin-bottom:6px">🏆 Kondisi Menang</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Game berakhir setelah 15 statement atau semua orang kecuali 1 habis token. Siapa yang sisa token paling banyak = menang! Kalau seri, sama-sama menang.</p>
+      </div>
+      <div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;color:#f87171;font-weight:700;margin-bottom:6px">😈 Tips Bermain</div>
+        <p style="font-size:13px;color:#94a3b8;line-height:1.6">Jujur itu wajib! Kalau ketahuan bohong, hukuman dari teman-teman bisa lebih buruk dari kehilangan token 😂. Yang paling "suci" belum tentu menang — strategy juga penting!</p>
+      </div>
+      <button onclick="document.getElementById('guide').style.display='none'" style="display:block;width:100%;padding:15px;margin-top:4px;border:none;border-radius:14px;cursor:pointer;font-size:14px;font-weight:600;background:linear-gradient(135deg,#22d3ee,#0891b2);color:#fff">✓ Mengerti, Mulai Main!</button>
+    </div>
+  </div>
+</body>
+</html>
