@@ -692,24 +692,32 @@
 
   // ── SESSION PERSISTENCE ──────────────────────────────────────────
   function saveSession(roomCode, isHost) {
-    localStorage.setItem('session_room_' + ROOM_PREFIX, roomCode);
-    localStorage.setItem('session_host_' + ROOM_PREFIX, isHost ? '1' : '0');
+    try {
+      localStorage.setItem('session_room_' + ROOM_PREFIX, roomCode);
+      localStorage.setItem('session_host_' + ROOM_PREFIX, isHost ? '1' : '0');
+    } catch(e) {}
   }
   function clearSession() {
-    localStorage.removeItem('session_room_' + ROOM_PREFIX);
-    localStorage.removeItem('session_host_' + ROOM_PREFIX);
+    try {
+      localStorage.removeItem('session_room_' + ROOM_PREFIX);
+      localStorage.removeItem('session_host_' + ROOM_PREFIX);
+    } catch(e) {}
   }
   async function tryResumeSession() {
-    const code = localStorage.getItem('session_room_' + ROOM_PREFIX);
+    if (!FB || !db) return false;
+    let code;
+    try { code = localStorage.getItem('session_room_' + ROOM_PREFIX); } catch(e) { return false; }
+    if (!code) return false;
     const isHost = localStorage.getItem('session_host_' + ROOM_PREFIX) === '1';
-    if (!code || !FB) return false;
     try {
-      const snap = await db.ref(`${ROOM_PREFIX}/${code}`).once('value');
+      // Timeout 5 detik — kalau gagal, langsung ke home
+      const snap = await Promise.race([
+        db.ref(`${ROOM_PREFIX}/${code}`).once('value'),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+      ]);
       if (!snap.exists()) { clearSession(); return false; }
       const room = snap.val();
-      // Room still valid (not gameover more than 1 min ago)
-      if (room.status === 'gameover') { clearSession(); return false; }
-      // Check if I'm still in the room
+      if (room.status === 'gameover' || room.status === 'ended') { clearSession(); return false; }
       if (!room.players || !room.players[S.myId]) { clearSession(); return false; }
       // Rejoin!
       S.roomCode = code;
@@ -721,9 +729,11 @@
   }
 
     window.onload=async ()=>{
-    cleanupOldRooms('tod_rooms');
-    const resumed = await tryResumeSession();
-    if (!resumed) rHome();
+    try { cleanupOldRooms('tod_rooms'); } catch(e) {}
+    try {
+      const resumed = await tryResumeSession();
+      if (!resumed) rHome();
+    } catch(e) { rHome(); }
   };
   function showToDGuide(){document.getElementById("tod-guide").style.display="block";}
   </script>
