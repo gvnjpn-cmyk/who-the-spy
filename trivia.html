@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Trivia</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{--bg:#080f08;--glass:#ffffff08;--glass2:#ffffff12;--border:#ffffff14;--border2:#ffffff22;--acc:#22c55e;--acc2:#4ade80;--red:#f87171;--blue:#60a5fa;--yellow:#fbbf24;--purple:#a78bfa;--text:#f0fff4;--text2:#86efac;--text3:#166534}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at top,rgba(34,197,94,.08) 0%,transparent 55%),radial-gradient(ellipse at bottom,rgba(74,222,128,.04) 0%,transparent 55%)}
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+    @keyframes timerShrink{from{width:100%}to{width:0%}}
+    .fade{animation:fadeUp .3s ease both}
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .c-grn{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.08)}
+    .c-red{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)}
+    .c-yel{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+    .ph{text-align:center;margin-bottom:20px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--acc2);text-transform:uppercase;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 20px;margin-top:10px;border:none;border-radius:14px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}.btn:active:not(:disabled){transform:scale(.97)}
+    .btn-grn{background:linear-gradient(135deg,var(--acc),#16a34a);color:#fff;box-shadow:0 4px 20px rgba(34,197,94,.35)}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:1.5px solid var(--border2);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--acc)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-grn{background:rgba(34,197,94,.15);color:var(--acc2);border:1px solid rgba(34,197,94,.3)}
+    .b-red{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+    .b-yel{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:#475569;border:1px solid var(--border)}
+    .pi{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;margin-top:8px;border-radius:12px;background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px}
+    .sbar{display:flex;align-items:center;justify-content:space-between;padding:9px 15px;background:var(--glass);border:1px solid var(--border);border-radius:13px;margin-bottom:14px;font-size:11px;color:var(--text2)}
+    .sbar .rnd{color:var(--acc2);font-weight:700;font-family:'Syne',sans-serif}
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;letter-spacing:12px;padding:14px 0}
+    .q-card{background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(74,222,128,.08));border:1.5px solid rgba(34,197,94,.35);border-radius:18px;padding:24px;margin:12px 0}
+    .q-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;line-height:1.5;color:var(--text)}
+    .q-cat{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--acc2);text-transform:uppercase;margin-bottom:10px}
+    .opt-btn{width:100%;padding:14px 16px;margin-top:8px;border:2px solid var(--border2);border-radius:14px;background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-align:left;transition:all .2s;display:flex;align-items:center;gap:12px}
+    .opt-btn:active{transform:scale(.98)}
+    .opt-btn:hover:not(.disabled){background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.4)}
+    .opt-btn.chosen{border-color:var(--acc);background:rgba(34,197,94,.15)}
+    .opt-btn.correct{border-color:var(--acc);background:rgba(34,197,94,.25);color:var(--acc2)}
+    .opt-btn.wrong{border-color:var(--red);background:rgba(248,113,113,.2);color:var(--red)}
+    .opt-btn.disabled{cursor:not-allowed;opacity:.6}
+    .opt-letter{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;flex-shrink:0}
+    .timer-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:14px}
+    .timer-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .1s linear}
+    .wp{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .wp span{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulseDot .9s ease-in-out infinite}
+    .wp span:nth-child(2){animation-delay:.15s}.wp span:nth-child(3){animation-delay:.3s}
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(34,197,94,.2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(4,16,4,.95);backdrop-filter:blur(20px);border:1.5px solid rgba(34,197,94,.4);border-radius:14px;padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .count-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  </style>
+</head>
+<body>
+<div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const ROOM_PREFIX='trv_rooms';
+const QUESTIONS=[
+  {q:"Ibu kota Indonesia adalah?",opts:["Jakarta","Surabaya","Bandung","Medan"],ans:0,cat:"Geografi"},
+  {q:"Berapa hasil dari 15 × 15?",opts:["200","215","225","235"],ans:2,cat:"Matematika"},
+  {q:"Planet terbesar di tata surya adalah?",opts:["Bumi","Saturn","Jupiter","Uranus"],ans:2,cat:"Sains"},
+  {q:"Siapa penemu bola lampu?",opts:["Tesla","Edison","Bell","Einstein"],ans:1,cat:"Sejarah"},
+  {q:"Bahasa pemrograman apa yang dibuat oleh Guido van Rossum?",opts:["Java","Python","Ruby","PHP"],ans:1,cat:"Teknologi"},
+  {q:"Negara mana yang memiliki populasi terbanyak di dunia?",opts:["India","Amerika","Indonesia","China"],ans:3,cat:"Geografi"},
+  {q:"Apa nama mata uang Jepang?",opts:["Won","Yuan","Yen","Ringgit"],ans:2,cat:"Umum"},
+  {q:"Berapa jumlah provinsi di Indonesia?",opts:["34","36","38","40"],ans:2,cat:"Indonesia"},
+  {q:"Siapa proklamator kemerdekaan Indonesia?",opts:["Soeharto","Soekarno & Hatta","Sudirman","Gajah Mada"],ans:1,cat:"Sejarah"},
+  {q:"Apa nama danau terbesar di Indonesia?",opts:["Danau Toba","Danau Maninjau","Danau Singkarak","Danau Sentani"],ans:0,cat:"Indonesia"},
+  {q:"Berapa sisi yang dimiliki segitiga?",opts:["2","3","4","5"],ans:1,cat:"Matematika"},
+  {q:"Planet yang terdekat dengan matahari adalah?",opts:["Venus","Bumi","Merkurius","Mars"],ans:2,cat:"Sains"},
+  {q:"Siapa yang melukis Mona Lisa?",opts:["Picasso","Da Vinci","Monet","Van Gogh"],ans:1,cat:"Seni"},
+  {q:"Apa nama gunung tertinggi di Indonesia?",opts:["Semeru","Rinjani","Carstensz/Puncak Jaya","Kerinci"],ans:2,cat:"Indonesia"},
+  {q:"Berapa banyak warna di pelangi?",opts:["5","6","7","8"],ans:2,cat:"Sains"},
+  {q:"Negara mana yang dijuluki 'Land of the Rising Sun'?",opts:["China","Korea","Jepang","Vietnam"],ans:2,cat:"Geografi"},
+  {q:"Apa singkatan HTML?",opts:["High Text Markup Language","HyperText Markup Language","Hyper Transfer Markup Language","High Transfer Meta Language"],ans:1,cat:"Teknologi"},
+  {q:"Siapa presiden pertama Amerika Serikat?",opts:["Abraham Lincoln","Thomas Jefferson","George Washington","Benjamin Franklin"],ans:2,cat:"Sejarah"},
+  {q:"Apa nama lagu kebangsaan Indonesia?",opts:["Garuda Pancasila","Tanah Airku","Indonesia Raya","Bagimu Negeri"],ans:2,cat:"Indonesia"},
+  {q:"Berapa hasil dari akar kuadrat 144?",opts:["10","12","14","16"],ans:1,cat:"Matematika"},
+  {q:"Siapa pencipta teori relativitas?",opts:["Newton","Einstein","Bohr","Hawking"],ans:1,cat:"Sains"},
+  {q:"Apa nama sungai terpanjang di dunia?",opts:["Amazon","Nil","Yangtze","Mississippi"],ans:1,cat:"Geografi"},
+  {q:"Dalam bahasa Inggris, 'kupu-kupu' disebut?",opts:["Dragonfly","Butterfly","Firefly","Bee"],ans:1,cat:"Bahasa"},
+  {q:"Apa nama presiden Indonesia ke-7?",opts:["Susilo Bambang Yudhoyono","Megawati","Joko Widodo","Habibie"],ans:2,cat:"Indonesia"},
+  {q:"Berapa jumlah huruf dalam alfabet Inggris?",opts:["24","25","26","27"],ans:2,cat:"Bahasa"},
+  {q:"Apa nama planet merah?",opts:["Venus","Mars","Jupiter","Saturnus"],ans:1,cat:"Sains"},
+  {q:"Siapa yang menemukan gravitasi?",opts:["Einstein","Newton","Galileo","Kepler"],ans:1,cat:"Sains"},
+  {q:"Apa ibu kota Australia?",opts:["Sydney","Melbourne","Brisbane","Canberra"],ans:3,cat:"Geografi"},
+  {q:"Batik berasal dari negara mana?",opts:["Malaysia","India","Indonesia","Thailand"],ans:2,cat:"Budaya"},
+  {q:"Apa nama alat musik tradisional Jawa yang terbuat dari bambu?",opts:["Angklung","Gamelan","Calung","Sasando"],ans:2,cat:"Budaya"},
+];
+
+const TIMER_SECS=15;
+const S={myId:localStorage.getItem('trv_id')||genId(),myName:'',roomCode:'',isHost:false,mode:'online',room:null,unsubFn:null,timerInterval:null,timerLeft:TIMER_SECS,oPlayers:[],oQIdx:0,oPhase:'q',oCount:4,oNames:Array.from({length:20},(_,i)=>`Pemain ${i+1}`)};
+localStorage.setItem('trv_id',S.myId);
+let db=null;
+function initFB(){try{if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();return true;}catch(e){return false;}}
+const FB=initFB();
+function genId(){return't'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function saveSession(c,h){try{localStorage.setItem('session_room_'+ROOM_PREFIX,c);localStorage.setItem('session_host_'+ROOM_PREFIX,h?'1':'0');}catch(e){}}
+function clearSession(){try{localStorage.removeItem('session_room_'+ROOM_PREFIX);localStorage.removeItem('session_host_'+ROOM_PREFIX);}catch(e){}}
+async function cleanupOldRooms(){if(!db)return;try{const snap=await db.ref(ROOM_PREFIX).once('value');if(!snap.exists())return;const rooms=snap.val();const now=Date.now();const ps=[];Object.entries(rooms).forEach(([code,room])=>{const age=now-(room.createdAt||0);if(age>6*60*60*1000||(room.status==='ended'&&age>30*60*1000))ps.push(db.ref(`${ROOM_PREFIX}/${code}`).remove());});if(ps.length)await Promise.all(ps);}catch(e){}}
+async function tryResumeSession(){if(!FB||!db)return false;let code;try{code=localStorage.getItem('session_room_'+ROOM_PREFIX);}catch(e){return false;}if(!code)return false;const isHost=localStorage.getItem('session_host_'+ROOM_PREFIX)==='1';try{const snap=await Promise.race([db.ref(`${ROOM_PREFIX}/${code}`).once('value'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))]);if(!snap.exists()){clearSession();return false;}const room=snap.val();if(room.status==='ended'){clearSession();return false;}if(!room.players||!room.players[S.myId]){clearSession();return false;}S.roomCode=code;S.isHost=isHost;S.mode='online';fbListen(code);return true;}catch(e){clearSession();return false;}}
+
+function startTimer(){stopTimer();S.timerLeft=TIMER_SECS;const fill=$('timer-fill');if(fill)fill.style.width='100%';S.timerInterval=setInterval(()=>{S.timerLeft=Math.max(0,S.timerLeft-0.1);const pct=(S.timerLeft/TIMER_SECS)*100;const fill=$('timer-fill');if(fill)fill.style.width=pct+'%';if(fill) fill.style.background=pct>50?'linear-gradient(90deg,#22c55e,#4ade80)':pct>25?'linear-gradient(90deg,#eab308,#fbbf24)':'linear-gradient(90deg,#ef4444,#f87171)';if(S.timerLeft<=0){stopTimer();const r=S.room;if(r&&r.status==='question'&&!r.answers?.[S.myId])fbAnswer(-1);}},100);}
+function stopTimer(){if(S.timerInterval){clearInterval(S.timerInterval);S.timerInterval=null;}}
+
+async function fbCreate(name){let code,exists=true;while(exists){code=genCode();const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');exists=s.exists()&&s.val().status!=='ended';}const qs=shuffle(QUESTIONS).slice(0,10);const now=Date.now();await db.ref(`${ROOM_PREFIX}/${code}`).set({code,hostId:S.myId,status:'lobby',round:0,questions:qs,currentQ:null,answers:null,qStart:null,createdAt:now,players:{[S.myId]:{name,joinedAt:now,score:0,answered:false}}});return code;}
+async function fbJoin(code,name){const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');if(!s.exists())throw new Error('Room tidak ditemukan');const r=s.val();if(r.status==='ended')throw new Error('Game sudah berakhir');if(Object.keys(r.players||{}).length>=20)throw new Error('Room penuh');if(r.players&&r.players[S.myId]){await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}/name`).set(name);return r;}await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}`).set({name,joinedAt:Date.now(),score:0,answered:false});return r;}
+function fbListen(code){if(S.unsubFn)S.unsubFn();saveSession(code,S.isHost);const ref=db.ref(`${ROOM_PREFIX}/${code}`);const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});S.unsubFn=()=>ref.off('value',h);}
+async function fbStart(){const r=S.room,pids=Object.keys(r.players);if(pids.length<2){toast('Minimal 2 pemain!');return;}const u={};pids.forEach(id=>{u[`players/${id}/score`]=0;u[`players/${id}/answered`]=false;});u.status='question';u.round=1;u.currentQ=r.questions[0];u.answers=null;u.qStart=Date.now();await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);}
+async function fbAnswer(optIdx){const r=S.room,me=r.players[S.myId];if(me?.answered)return;const timeSpent=(Date.now()-(r.qStart||Date.now()))/1000;const correct=optIdx===r.currentQ?.ans;const points=correct?Math.max(100,Math.round(500-timeSpent*30)):0;const u={[`answers/${S.myId}`]:optIdx,[`players/${S.myId}/answered`]:true};if(points>0)u[`players/${S.myId}/score`]=(me?.score||0)+points;await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);stopTimer();// Check all answered
+const s=await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).once('value');const room=s.val();if(Object.values(room.players).every(p=>p.answered))await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({status:'result'});}
+async function fbNext(){if(!S.isHost)return;const r=S.room;const nextR=(r.round||0)+1;const qs=r.questions||[];if(nextR>qs.length){await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update({status:'ended'});clearSession();return;}const pids=Object.keys(r.players);const u={};pids.forEach(id=>{u[`players/${id}/answered`]=false;});u.status='question';u.round=nextR;u.currentQ=qs[nextR-1];u.answers=null;u.qStart=Date.now();await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);}
+async function fbPlayAgain(){if(!S.isHost)return;const r=S.room;const pids=Object.keys(r.players);const qs=shuffle(QUESTIONS).slice(0,10);const u={};pids.forEach(id=>{u[`players/${id}/score`]=0;u[`players/${id}/answered`]=false;});u.status='lobby';u.round=0;u.questions=qs;u.currentQ=null;u.answers=null;await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);}
+async function fbKick(tid){if(!S.isHost||tid===S.myId)return;await db.ref(`${ROOM_PREFIX}/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');}
+
+function renderPhase(){if(S.mode==='offline'){renderOff();return;}const r=S.room;if(!r)return;stopTimer();if(r.status==='lobby')   return rLobby();if(r.status==='question')return rQuestion();if(r.status==='result')  return rResult();if(r.status==='ended')   return rEnded();}
+
+function rHome(){render(`<div class="ph" style="margin-top:8px"><div class="ey">🧠 Trivia</div><h1>Kuis Indonesia!</h1><div class="sub">Tes pengetahuanmu — siapa paling cepat dan tepat?</div></div><div class="card"><div class="lbl">Nama kamu</div><input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}" oninput="S.myName=this.value.trim()"><div style="font-size:11px;color:#166534;margin-top:6px">${FB?'<span style="color:var(--acc2)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi</span>'}</div></div>${FB?`<div class="card c-grn"><div class="lbl">🌐 Online</div><p style="font-size:13px;color:var(--text2);margin-bottom:12px">Jawab paling cepat = poin lebih banyak! Timer 15 detik per soal.</p><button class="btn btn-grn" onclick="onCreate()">+ Buat Room Baru</button><div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div><input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"><button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button></div>`:''}
+<div class="card"><div class="lbl">📱 Offline</div><button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline</button></div>
+<div class="card" style="padding:14px"><div class="lbl">Sistem Poin</div><p style="font-size:13px;color:var(--text2);line-height:1.7">Jawaban benar = <b style="color:var(--acc2)">100–500 poin</b> (makin cepat makin banyak). Jawaban salah = 0 poin. 10 soal per ronde!</p></div>
+<button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:4px">← Kembali ke Hub</button>`);setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);}
+
+async function onCreate(){const n=($('ni')?.value||'').trim()||S.myName;if(!n){toast('Masukkan namamu!');return;}S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}catch(e){toast('Gagal: '+e.message);rHome();}}
+async function onJoin(){const n=($('ni')?.value||'').trim()||S.myName;const c=($('ci')?.value||'').toUpperCase().trim();if(!n){toast('Masukkan namamu!');return;}if(c.length!==4){toast('Kode harus 4 huruf!');return;}S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}catch(e){toast('Gagal: '+e.message);rHome();}}
+function onOffline(){S.myName=($('ni')?.value||'').trim()||S.myName||'Host';S.mode='offline';rOffSetup();}
+function leaveRoom(){stopTimer();if(S.unsubFn){S.unsubFn();S.unsubFn=null;}clearSession();S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();}
+function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+function rLobby(){const r=S.room,ps=r.players||{};const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));render(`<div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>Waiting Room</h1></div><div class="card" style="text-align:center"><div class="lbl">Kode Room</div><div class="rcode">${esc(r.code)}</div><button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button></div><div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="lbl" style="margin:0">Pemain</div><span class="badge b-grn">${pids.length}/20</span></div>${pids.map(id=>`<div class="pi"><div style="display:flex;gap:8px;align-items:center"><span style="font-weight:500">${esc(ps[id].name)}</span>${id===r.hostId?'<span class="badge b-grn">Host</span>':''}${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}</div>${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600">Kick</button>`:'<span style="width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block"></span>'}</div>`).join('')}</div>${S.isHost?`<button class="btn btn-grn" ${pids.length>=2?'':'disabled'} onclick="fbStart()">▶ Mulai Kuis · ${pids.length} Pemain</button>`:`<div class="card" style="text-align:center;padding:20px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host memulai...</p></div>`}<button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>`);}
+
+function rQuestion(){const r=S.room,me=r.players[S.myId];const q=r.currentQ;const letters=['A','B','C','D'];const ans=r.answers||{};const myAns=ans[S.myId];const answered=me?.answered;const ac=Object.values(r.players).filter(p=>p.answered).length;const tc=Object.keys(r.players).length;if(!answered) startTimer();
+render(`<div class="sbar fade"><span class="rnd">Soal ${r.round}/10</span><span style="font-size:11px;color:var(--text2)">${ac}/${tc} jawab</span><span style="font-size:11px;color:var(--text2)">${esc(r.code)}</span></div><div class="timer-bar"><div id="timer-fill" class="timer-fill" style="width:${answered?'0':S.timerLeft/TIMER_SECS*100}%"></div></div><div class="q-card"><div class="q-cat">${esc(q?.cat)}</div><div class="q-text">${esc(q?.q)}</div></div>${(q?.opts||[]).map((opt,i)=>`<button class="opt-btn ${answered?'disabled':''} ${answered&&myAns===i?'chosen':''}" onclick="${!answered?`fbAnswer(${i})`:''}"><div class="opt-letter">${letters[i]}</div>${esc(opt)}</button>`).join('')}${answered?`<div style="text-align:center;padding:10px;font-size:13px;color:var(--text2)">${ac}/${tc} sudah menjawab...</div>`:''}`);
+if(answered){stopTimer();}else{const fill=$('timer-fill');if(fill){fill.style.width=S.timerLeft/TIMER_SECS*100+'%';}}}
+
+function rResult(){const r=S.room;const q=r.currentQ;const ans=r.answers||{};const ps=r.players;const letters=['A','B','C','D'];render(`<div class="sbar fade"><span class="rnd">Hasil Soal ${r.round}/10</span><span style="font-size:11px;color:var(--text2)">${esc(r.code)}</span></div><div class="q-card" style="padding:18px"><div class="q-cat">${esc(q?.cat)}</div><div class="q-text">${esc(q?.q)}</div><div style="margin-top:14px;padding:10px;background:rgba(34,197,94,.15);border-radius:10px;border:1px solid rgba(34,197,94,.35)"><span style="font-size:12px;color:var(--acc2);font-weight:700">✓ Jawaban: </span><span style="font-size:13px;font-weight:600">${letters[q?.ans]} — ${esc(q?.opts?.[q?.ans])}</span></div></div><div class="card">${(q?.opts||[]).map((opt,i)=>{const isCorrect=i===q?.ans;const voterCount=Object.entries(ans).filter(([,v])=>v===i).length;const tc=Object.keys(ps).length;const pct=tc>0?Math.round(voterCount/tc*100):0;return`<div class="opt-btn ${isCorrect?'correct':'wrong'}" style="cursor:default;margin-top:8px"><div class="opt-letter">${letters[i]}</div><div style="flex:1"><div>${esc(opt)}</div><div style="margin-top:4px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden"><div style="width:${pct}%;height:100%;background:${isCorrect?'var(--acc)':'rgba(248,113,113,.6)'};border-radius:2px;transition:width .5s"></div></div></div><span style="font-size:12px;font-weight:700;min-width:28px;text-align:right">${pct}%</span></div>`}).join('')}</div><div class="card" style="padding:14px"><div class="lbl">Skor Sementara</div>${Object.entries(ps).sort((a,b)=>(b[1].score||0)-(a[1].score||0)).map(([id,p],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--text3);width:20px">${i+1}</span><span style="flex:1;font-size:13px">${esc(p.name)}${id===S.myId?' (kamu)':''}</span><span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--acc2)">${p.score||0}</span></div>`).join('')}</div>${S.isHost?`<button class="btn btn-grn" onclick="fbNext()">${(r.round||0)<10?'→ Soal Berikutnya':'🏁 Lihat Hasil Akhir'}</button>`:`<div class="card" style="text-align:center;padding:16px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:12px;color:var(--text2);margin-top:6px">Menunggu host...</p></div>`}`);}
+
+function rEnded(){clearSession();const r=S.room,ps=r.players;const sorted=Object.entries(ps).sort((a,b)=>(b[1].score||0)-(a[1].score||0));const medals=['🥇','🥈','🥉'];render(`<div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center"><div style="font-size:56px;margin-bottom:10px">🏆</div><div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">Kuis Selesai!</div><p style="font-size:13px;color:var(--text2);margin:6px 0 22px">Siapa yang paling pintar?</p><div class="card" style="text-align:left"><div class="lbl">Papan Skor Akhir</div>${sorted.map(([id,p],i)=>`<div class="pi" style="${i===0?'border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.1)':''}"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${medals[i]||String(i+1)}</span><span style="font-weight:500">${esc(p.name)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span></div><span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--acc2)">${p.score||0}</span></div>`).join('')}</div>${S.isHost?`<button class="btn btn-grn" onclick="fbPlayAgain()">↺ Main Lagi</button>`:`<div class="card" style="padding:16px;text-align:center"><div class="wp"><span></span><span></span><span></span></div></div>`}<button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button></div>`);}
+
+// OFFLINE
+function rOffSetup(){render(`<div class="ph" style="margin-top:6px"><div class="ey">Offline</div><h1>Setup Pemain</h1></div><div class="card"><div class="lbl">Jumlah Pemain</div><div class="count-sel"><button class="count-btn" onclick="oChg(-1)">−</button><div id="ocd" class="count-num">${S.oCount}</div><button class="count-btn" onclick="oChg(1)">+</button></div><div style="height:1px;background:var(--border);margin:14px 0"></div><div class="lbl">Nama Pemain</div><div id="onl"></div><button class="btn btn-grn" onclick="oStart()" style="margin-top:14px">▶ Mulai Kuis</button></div><button class="btn btn-ghost" onclick="rHome()">← Kembali</button>`);renderONames();}
+function oChg(d){S.oCount=Math.max(1,Math.min(20,S.oCount+d));$('ocd').textContent=S.oCount;renderONames();}
+function renderONames(){const c=$('onl');if(!c)return;c.innerHTML=Array.from({length:S.oCount},(_,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span><input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}" oninput="S.oNames[${i}]=this.value.trim()" placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px"></div>`).join('');}
+function oStart(){S.oPlayers=S.oNames.slice(0,S.oCount).map((n,i)=>({id:i,name:n||`Pemain ${i+1}`,score:0}));S.oQList=shuffle(QUESTIONS).slice(0,10);S.oQIdx=0;S.oPIdx=0;S.oAnswers={};S.oPhase='q';renderOff();}
+function renderOff(){if(S.oPhase==='q')return rOQ();if(S.oPhase==='result')return rOResult();if(S.oPhase==='ended')return rOEnded();}
+function rOQ(){const p=S.oPlayers[S.oPIdx];const q=S.oQList[S.oQIdx];const letters=['A','B','C','D'];render(`<div class="sbar fade"><span class="rnd">Soal ${S.oQIdx+1}/10</span><span style="color:var(--text3);font-size:12px">${esc(p.name)}</span></div><div class="q-card"><div class="q-cat">${esc(q.cat)}</div><div class="q-text">${esc(q.q)}</div></div>${q.opts.map((opt,i)=>`<button class="opt-btn" onclick="oAnswer(${i})"><div class="opt-letter">${letters[i]}</div>${esc(opt)}</button>`).join('')}`);}
+function oAnswer(i){S.oAnswers[S.oPlayers[S.oPIdx].id]=i;const q=S.oQList[S.oQIdx];if(i===q.ans)S.oPlayers[S.oPIdx].score+=300;if(S.oPIdx+1<S.oPlayers.length){S.oPIdx++;renderOff();}else{S.oPhase='result';renderOff();}}
+function rOResult(){const q=S.oQList[S.oQIdx];const letters=['A','B','C','D'];render(`<div class="sbar fade"><span class="rnd">Hasil ${S.oQIdx+1}/10</span><span style="color:var(--text3);font-size:12px">Offline</span></div><div class="q-card" style="padding:18px"><div class="q-cat">${esc(q.cat)}</div><div class="q-text">${esc(q.q)}</div><div style="margin-top:12px;padding:10px;background:rgba(34,197,94,.15);border-radius:10px;border:1px solid rgba(34,197,94,.35)"><span style="font-size:12px;color:var(--acc2);font-weight:700">✓ Jawaban: ${letters[q.ans]} — ${esc(q.opts[q.ans])}</span></div></div><div class="card" style="padding:14px"><div class="lbl">Skor</div>${S.oPlayers.map((p,i)=>{const myAns=S.oAnswers[p.id];const correct=myAns===q.ans;return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;flex:1">${esc(p.name)}</span><span class="badge ${correct?'b-grn':'b-red'}">${correct?'✓ Benar':'✗ Salah'}</span><span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--acc2)">${p.score}</span></div>`}).join('')}</div><button class="btn btn-grn" onclick="oNext()">${S.oQIdx+1<10?'→ Soal Berikutnya':'🏁 Hasil Akhir'}</button>`);}
+function oNext(){if(S.oQIdx+1<10){S.oQIdx++;S.oPIdx=0;S.oAnswers={};S.oPhase='q';renderOff();}else{S.oPhase='ended';renderOff();}}
+function rOEnded(){const sorted=[...S.oPlayers].sort((a,b)=>b.score-a.score);const medals=['🥇','🥈','🥉'];render(`<div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center"><div style="font-size:56px;margin-bottom:10px">🏆</div><div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">Kuis Selesai!</div><div class="card" style="text-align:left;margin-top:20px">${sorted.map((p,i)=>`<div class="pi" style="${i===0?'border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.1)':''}"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${medals[i]||''}</span><span style="font-weight:500">${esc(p.name)}</span></div><span style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--acc2)">${p.score}</span></div>`).join('')}</div><button class="btn btn-grn" onclick="oStart()">↺ Main Lagi</button><button class="btn btn-ghost" onclick="S.mode='online';rHome()" style="margin-top:6px">← Menu Utama</button></div>`);}
+
+window.onload=async()=>{try{cleanupOldRooms();}catch(e){}try{const r=await tryResumeSession();if(!r)rHome();}catch(e){rHome();}};
+</script>
+</body>
+</html>

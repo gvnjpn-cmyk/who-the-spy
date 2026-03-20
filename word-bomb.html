@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Word Bomb</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    :root{--bg:#100808;--glass:#ffffff08;--glass2:#ffffff12;--border:#ffffff14;--border2:#ffffff22;--acc:#f97316;--acc2:#fb923c;--red:#ef4444;--green:#4ade80;--yellow:#fbbf24;--text:#fff7f0;--text2:#fdba74;--text3:#7c2d12}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at top,rgba(239,68,68,.1) 0%,transparent 50%),radial-gradient(ellipse at bottom,rgba(249,115,22,.06) 0%,transparent 50%)}
+    #app{position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto;padding:20px 16px 80px;min-height:100vh}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulseDot{0%,100%{transform:scale(.6);opacity:.3}50%{transform:scale(1);opacity:1}}
+    @keyframes bombShake{0%,100%{transform:rotate(0)}20%{transform:rotate(-10deg)}40%{transform:rotate(10deg)}60%{transform:rotate(-10deg)}80%{transform:rotate(10deg)}}
+    @keyframes bombPulse{0%,100%{transform:scale(1);text-shadow:0 0 0 #ef4444}50%{transform:scale(1.2);text-shadow:0 0 20px #ef4444}}
+    @keyframes explode{0%{transform:scale(1);opacity:1}50%{transform:scale(2);opacity:.5}100%{transform:scale(3);opacity:0}}
+    .fade{animation:fadeUp .3s ease both}
+    .card{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent)}
+    .ph{text-align:center;margin-bottom:20px}
+    .ph .ey{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--acc2);text-transform:uppercase;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:100px;padding:4px 12px;margin-bottom:10px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:clamp(22px,6vw,30px);font-weight:800;letter-spacing:-.5px}
+    .ph .sub{font-size:13px;color:var(--text2);margin-top:5px}
+    .lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 20px;margin-top:10px;border:none;border-radius:14px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:.2px;transition:all .2s}
+    .btn:disabled{opacity:.35;cursor:not-allowed}.btn:active:not(:disabled){transform:scale(.97)}
+    .btn-ora{background:linear-gradient(135deg,var(--acc),#ea580c);color:#fff;box-shadow:0 4px 20px rgba(249,115,22,.35)}
+    .btn-ghost{background:var(--glass);color:var(--text2);border:1.5px solid var(--border2)}
+    .inp{width:100%;padding:13px 16px;background:rgba(255,255,255,.06);border:1.5px solid var(--border2);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+    .inp:focus{border-color:var(--acc)}.inp::placeholder{color:var(--text3)}
+    .inp-code{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;text-align:center;letter-spacing:10px;text-transform:uppercase;padding:16px}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:1.5px;border-radius:100px;text-transform:uppercase}
+    .b-ora{background:rgba(249,115,22,.15);color:var(--acc2);border:1px solid rgba(249,115,22,.3)}
+    .b-grn{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+    .b-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+    .b-dim{background:rgba(255,255,255,.06);color:#475569;border:1px solid var(--border)}
+    .pi{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;margin-top:8px;border-radius:12px;background:rgba(255,255,255,.04);border:1.5px solid var(--border);font-size:13px}
+    .sbar{display:flex;align-items:center;justify-content:space-between;padding:9px 15px;background:var(--glass);border:1px solid var(--border);border-radius:13px;margin-bottom:14px;font-size:11px;color:var(--text2)}
+    .sbar .rnd{color:var(--acc2);font-weight:700;font-family:'Syne',sans-serif}
+    .rcode{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--acc),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;letter-spacing:12px;padding:14px 0}
+    /* BOMB */
+    .bomb-area{text-align:center;padding:20px 0}
+    .bomb-icon{font-size:72px;display:block;line-height:1}
+    .bomb-icon.danger{animation:bombShake .3s ease-in-out infinite}
+    .bomb-icon.exploding{animation:explode .5s ease-in-out forwards}
+    .syllable-box{display:inline-block;margin:14px 0;background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(239,68,68,.15));border:2px solid rgba(249,115,22,.5);border-radius:16px;padding:12px 28px}
+    .syllable-txt{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--acc2);letter-spacing:4px;text-transform:uppercase}
+    .timer-ring{position:relative;width:80px;height:80px;margin:0 auto}
+    .timer-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:24px;font-weight:800}
+    .word-inp{width:100%;padding:16px;background:rgba(255,255,255,.08);border:2px solid rgba(249,115,22,.4);border-radius:14px;color:var(--text);font-family:'Syne',sans-serif;font-size:22px;font-weight:700;text-align:center;outline:none;letter-spacing:2px;text-transform:uppercase}
+    .word-inp:focus{border-color:var(--acc);background:rgba(249,115,22,.08)}
+    .word-inp::placeholder{color:rgba(249,115,22,.3);font-size:14px;letter-spacing:1px}
+    .player-turn{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--acc2);text-align:center;margin:8px 0}
+    .lives-row{display:flex;gap:4px;justify-content:center;margin-top:4px}
+    .life{font-size:18px}
+    .history-chip{display:inline-block;padding:4px 10px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:100px;font-size:12px;color:var(--text2);margin:3px}
+    .wp{display:flex;gap:5px;align-items:center;justify-content:center;margin:6px 0}
+    .wp span{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulseDot .9s ease-in-out infinite}
+    .wp span:nth-child(2){animation-delay:.15s}.wp span:nth-child(3){animation-delay:.3s}
+    .loader{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px}
+    .loader-ring{width:44px;height:44px;border-radius:50%;border:3px solid rgba(249,115,22,.2);border-top-color:var(--acc);animation:spin .8s linear infinite}
+    .loader p{font-size:12px;color:var(--text3);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(16,8,8,.95);backdrop-filter:blur(20px);border:1.5px solid rgba(249,115,22,.4);border-radius:14px;padding:12px 22px;font-size:13px;font-weight:500;color:var(--text);z-index:999;transition:transform .35s cubic-bezier(.4,0,.2,1);max-width:320px;text-align:center}
+    #toast.show{transform:translateX(-50%) translateY(0)}
+    .count-sel{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+    .count-btn{width:44px;height:44px;border-radius:12px;border:1.5px solid var(--border2);background:var(--glass);color:var(--text);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .count-btn:active{transform:scale(.93)}
+    .count-num{flex:1;text-align:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;background:linear-gradient(135deg,var(--text),var(--acc2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  </style>
+</head>
+<body>
+<div id="app"><div class="loader"><div class="loader-ring"></div><p>memuat...</p></div></div>
+<div id="toast"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const ROOM_PREFIX='wb_rooms';
+const SYLLABLES=['an','ar','am','at','ak','al','ah','ap','as','au','ai','ia','ie','io','iu','un','ur','um','ut','uk','ul','uh','up','us','in','ir','im','it','ik','il','ih','ip','is','en','er','em','et','ek','el','eh','ep','es','on','or','om','ot','ok','ol','oh','op','os','ba','bi','bu','be','bo','ca','ci','cu','ce','co','da','di','du','de','do','ga','gi','gu','ge','go','ha','hi','hu','he','ho','ja','ji','ju','je','jo','ka','ki','ku','ke','ko','la','li','lu','le','lo','ma','mi','mu','me','mo','na','ni','nu','ne','no','pa','pi','pu','pe','po','ra','ri','ru','re','ro','sa','si','su','se','so','ta','ti','tu','te','to','wa','wi','wu','we','wo','ya','yu','ye','za','zi','zu','ze','zo'];
+const TIMER_START=12;
+const MAX_LIVES=3;
+const S={myId:localStorage.getItem('wb_id')||genId(),myName:'',roomCode:'',isHost:false,mode:'online',room:null,unsubFn:null,timerInterval:null,timerLeft:TIMER_START,oPlayers:[],oSyl:'',oTurn:0,oHistory:[],oCount:4,oNames:Array.from({length:20},(_,i)=>`Pemain ${i+1}`)};
+localStorage.setItem('wb_id',S.myId);
+let db=null;
+function initFB(){try{if(!window.FIREBASE_CONFIG||window.FIREBASE_CONFIG.apiKey.startsWith('GANTI'))return false;if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);db=firebase.database();return true;}catch(e){return false;}}
+const FB=initFB();
+function genId(){return'w'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ';let r='';for(let i=0;i<4;i++)r+=c[Math.floor(Math.random()*c.length)];return r;}
+function shuffle(a){return[...a].sort(()=>Math.random()-.5);}
+function randSyl(){return SYLLABLES[Math.floor(Math.random()*SYLLABLES.length)];}
+function toast(msg,d=2500){const e=document.getElementById('toast');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),d);}
+function render(h){document.getElementById('app').innerHTML=`<div class="fade">${h}</div>`;}
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function saveSession(c,h){try{localStorage.setItem('session_room_'+ROOM_PREFIX,c);localStorage.setItem('session_host_'+ROOM_PREFIX,h?'1':'0');}catch(e){}}
+function clearSession(){try{localStorage.removeItem('session_room_'+ROOM_PREFIX);localStorage.removeItem('session_host_'+ROOM_PREFIX);}catch(e){}}
+async function cleanupOldRooms(){if(!db)return;try{const snap=await db.ref(ROOM_PREFIX).once('value');if(!snap.exists())return;const rooms=snap.val();const now=Date.now();const ps=[];Object.entries(rooms).forEach(([code,room])=>{const age=now-(room.createdAt||0);if(age>6*60*60*1000||(room.status==='ended'&&age>30*60*1000))ps.push(db.ref(`${ROOM_PREFIX}/${code}`).remove());});if(ps.length)await Promise.all(ps);}catch(e){}}
+async function tryResumeSession(){if(!FB||!db)return false;let code;try{code=localStorage.getItem('session_room_'+ROOM_PREFIX);}catch(e){return false;}if(!code)return false;const isHost=localStorage.getItem('session_host_'+ROOM_PREFIX)==='1';try{const snap=await Promise.race([db.ref(`${ROOM_PREFIX}/${code}`).once('value'),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000))]);if(!snap.exists()){clearSession();return false;}const room=snap.val();if(room.status==='ended'){clearSession();return false;}if(!room.players||!room.players[S.myId]){clearSession();return false;}S.roomCode=code;S.isHost=isHost;S.mode='online';fbListen(code);return true;}catch(e){clearSession();return false;}}
+
+function startTimer(onExpire){stopTimer();S.timerLeft=TIMER_START;S.timerInterval=setInterval(()=>{S.timerLeft=Math.max(0,S.timerLeft-.1);const txt=$('timer-txt');if(txt)txt.textContent=Math.ceil(S.timerLeft);const bomb=$('bomb-icon');if(bomb){if(S.timerLeft<=3)bomb.className='bomb-icon danger';else bomb.className='bomb-icon';}if(S.timerLeft<=0){stopTimer();if(onExpire)onExpire();}},100);}
+function stopTimer(){if(S.timerInterval){clearInterval(S.timerInterval);S.timerInterval=null;}}
+
+async function fbCreate(name){let code,exists=true;while(exists){code=genCode();const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');exists=s.exists()&&s.val().status!=='ended';}const now=Date.now();const syl=randSyl();await db.ref(`${ROOM_PREFIX}/${code}`).set({code,hostId:S.myId,status:'lobby',syllable:syl,currentTurn:null,round:1,history:[],usedWords:[],timerStart:null,createdAt:now,players:{[S.myId]:{name,joinedAt:now,lives:MAX_LIVES,alive:true}}});return code;}
+async function fbJoin(code,name){const s=await db.ref(`${ROOM_PREFIX}/${code}`).once('value');if(!s.exists())throw new Error('Room tidak ditemukan');const r=s.val();if(r.status==='ended')throw new Error('Game sudah berakhir');if(Object.keys(r.players||{}).length>=12)throw new Error('Room penuh (maks 12)');if(r.players&&r.players[S.myId]){await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}/name`).set(name);return r;}await db.ref(`${ROOM_PREFIX}/${code}/players/${S.myId}`).set({name,joinedAt:Date.now(),lives:MAX_LIVES,alive:true});return r;}
+function fbListen(code){if(S.unsubFn)S.unsubFn();saveSession(code,S.isHost);const ref=db.ref(`${ROOM_PREFIX}/${code}`);const h=ref.on('value',snap=>{if(!snap.exists())return;S.room=snap.val();renderPhase();});S.unsubFn=()=>ref.off('value',h);}
+async function fbStart(){const r=S.room,pids=Object.keys(r.players);if(pids.length<2){toast('Minimal 2 pemain!');return;}const u={};pids.forEach(id=>{u[`players/${id}/lives`]=MAX_LIVES;u[`players/${id}/alive`]=true;});u.status='game';u.currentTurn=pids[0];u.syllable=randSyl();u.round=1;u.history=[];u.usedWords=[];u.timerStart=Date.now();await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);}
+
+async function fbSubmit(word){
+  const r=S.room;
+  if(r.currentTurn!==S.myId){toast('Bukan giliranmu!');return;}
+  const syl=r.syllable.toLowerCase();
+  const w=word.trim().toLowerCase();
+  if(w.length<2){toast('Minimal 2 huruf!');return;}
+  if(!w.includes(syl)){toast(`Kata harus mengandung "${syl.toUpperCase()}"!`);return;}
+  if((r.usedWords||[]).includes(w)){toast('Kata sudah dipakai!');return;}
+  // Valid word — advance turn
+  const alivePids=Object.keys(r.players).filter(id=>r.players[id].alive).sort((a,b)=>(r.players[a].joinedAt||0)-(r.players[b].joinedAt||0));
+  const myIdx=alivePids.indexOf(S.myId);
+  const nextId=alivePids[(myIdx+1)%alivePids.length];
+  const newHistory=[...(r.history||[]),{player:r.players[S.myId].name,word:w,syl}].slice(-20);
+  const newUsed=[...(r.usedWords||[]),w];
+  const u={currentTurn:nextId,syllable:randSyl(),history:newHistory,usedWords:newUsed,timerStart:Date.now()};
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+  stopTimer();
+}
+
+async function fbExpired(){
+  // Called when timer runs out for current player
+  const r=S.room;if(!r||r.currentTurn!==S.myId)return;
+  const ps=r.players;const me=ps[S.myId];
+  const newLives=(me?.lives||0)-1;
+  const u={[`players/${S.myId}/lives`]:newLives};
+  if(newLives<=0)u[`players/${S.myId}/alive`]=false;
+  // Check win
+  const fp=JSON.parse(JSON.stringify(ps));fp[S.myId].lives=newLives;if(newLives<=0)fp[S.myId].alive=false;
+  const aliveArr=Object.entries(fp).filter(([,p])=>p.alive);
+  if(aliveArr.length<=1){
+    const winner=aliveArr[0]?.[0]||null;u.winner=winner;u.winReason=winner?`${fp[winner].name} adalah yang terakhir bertahan!`:'Semua eliminasi!';u.status='ended';clearSession();
+  } else {
+    const alivePids=aliveArr.map(([id])=>id).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));
+    const myIdx=alivePids.indexOf(S.myId);const nextId=alivePids[(myIdx)%alivePids.length]||alivePids[0];
+    u.currentTurn=nextId;u.syllable=randSyl();u.timerStart=Date.now();
+  }
+  await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);
+}
+
+async function fbPlayAgain(){if(!S.isHost)return;const r=S.room;const pids=Object.keys(r.players);const u={};pids.forEach(id=>{u[`players/${id}/lives`]=MAX_LIVES;u[`players/${id}/alive`]=true;});u.status='lobby';u.currentTurn=null;u.syllable=randSyl();u.history=[];u.usedWords=[];u.winner=null;u.winReason='';await db.ref(`${ROOM_PREFIX}/${S.roomCode}`).update(u);}
+async function fbKick(tid){if(!S.isHost||tid===S.myId)return;await db.ref(`${ROOM_PREFIX}/${S.roomCode}/players/${tid}`).remove();toast('Pemain dikeluarkan');}
+
+function renderPhase(){if(S.mode==='offline'){renderOff();return;}const r=S.room;if(!r)return;stopTimer();if(r.status==='lobby')return rLobby();if(r.status==='game')return rGame();if(r.status==='ended')return rEnded();}
+
+function rHome(){render(`<div class="ph" style="margin-top:8px"><div class="ey">💣 Word Bomb</div><h1>Bom Kata!</h1><div class="sub">Sebut kata yang mengandung suku kata — sebelum BOM meledak!</div></div><div class="card"><div class="lbl">Nama kamu</div><input id="ni" class="inp" placeholder="Masukkan namamu..." maxlength="20" value="${esc(S.myName)}" oninput="S.myName=this.value.trim()"><div style="font-size:11px;color:var(--text3);margin-top:6px">${FB?'<span style="color:var(--green)">● Firebase terhubung</span>':'<span style="color:var(--red)">● Firebase belum dikonfigurasi</span>'}</div></div>${FB?`<div class="card" style="border-color:rgba(249,115,22,.35);background:rgba(249,115,22,.07)"><div class="lbl">🌐 Online</div><p style="font-size:13px;color:var(--text2);margin-bottom:12px">2–12 pemain, giliran berganti, kata harus mengandung suku kata yang muncul!</p><button class="btn btn-ora" onclick="onCreate()">+ Buat Room Baru</button><div style="display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:var(--text3)"><div style="flex:1;height:1px;background:var(--border)"></div>atau<div style="flex:1;height:1px;background:var(--border)"></div></div><input id="ci" class="inp inp-code" placeholder="KODE" maxlength="4" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'')"><button class="btn btn-ghost" onclick="onJoin()" style="margin-top:8px">→ Join Room</button></div>`:''}
+<div class="card"><div class="lbl">📱 Offline</div><button class="btn btn-ghost" onclick="onOffline()">▶ Main Offline</button></div>
+<div class="card" style="padding:14px"><div class="lbl">Cara Main</div><p style="font-size:13px;color:var(--text2);line-height:1.7">Suku kata muncul → sebut kata yang mengandung suku kata itu sebelum <b style="color:var(--acc2)">timer ${TIMER_START} detik</b> habis. Gagal = kehilangan 1 nyawa 💀. Punya ${MAX_LIVES} nyawa, habis = eliminasi!</p></div>
+<button class="btn btn-ghost" onclick="location.href='index.html'" style="margin-top:4px">← Kembali ke Hub</button>`);setTimeout(()=>{const e=$('ni');if(e&&!S.myName)e.focus();},100);}
+
+async function onCreate(){const n=($('ni')?.value||'').trim()||S.myName;if(!n){toast('Masukkan namamu!');return;}S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Membuat room...</p></div>`);try{const c=await fbCreate(n);S.roomCode=c;S.isHost=true;S.mode='online';fbListen(c);}catch(e){toast('Gagal: '+e.message);rHome();}}
+async function onJoin(){const n=($('ni')?.value||'').trim()||S.myName;const c=($('ci')?.value||'').toUpperCase().trim();if(!n){toast('Masukkan namamu!');return;}if(c.length!==4){toast('Kode harus 4 huruf!');return;}S.myName=n;render(`<div class="loader"><div class="loader-ring"></div><p>Bergabung...</p></div>`);try{await fbJoin(c,n);S.roomCode=c;S.isHost=false;S.mode='online';fbListen(c);}catch(e){toast('Gagal: '+e.message);rHome();}}
+function onOffline(){S.myName=($('ni')?.value||'').trim()||S.myName||'Host';S.mode='offline';rOffSetup();}
+function leaveRoom(){stopTimer();if(S.unsubFn){S.unsubFn();S.unsubFn=null;}clearSession();S.room=null;S.roomCode='';S.isHost=false;S.mode='online';rHome();}
+function copyCode(c){navigator.clipboard?.writeText(c).then(()=>toast('✅ Kode disalin!')).catch(()=>toast('Kode: '+c));}
+
+function rLobby(){const r=S.room,ps=r.players||{};const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));render(`<div class="ph" style="margin-top:6px"><div class="ey">Lobby</div><h1>💣 Word Bomb</h1></div><div class="card" style="text-align:center"><div class="lbl">Kode Room</div><div class="rcode">${esc(r.code)}</div><button class="btn btn-ghost" onclick="copyCode('${esc(r.code)}')" style="max-width:180px;margin:0 auto;padding:10px">⎘ Salin Kode</button></div><div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px"><div class="lbl" style="margin:0">Pemain</div><span class="badge b-ora">${pids.length}/12</span></div>${pids.map(id=>`<div class="pi"><div style="display:flex;gap:8px;align-items:center"><span style="font-weight:500">${esc(ps[id].name)}</span>${id===r.hostId?'<span class="badge b-ora">Host</span>':''}${id===S.myId?'<span class="badge b-dim">Kamu</span>':''}</div>${S.isHost&&id!==S.myId?`<button onclick="fbKick('${id}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;font-weight:600">Kick</button>`:'<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>'}</div>`).join('')}</div>${S.isHost?`<button class="btn btn-ora" ${pids.length>=2?'':'disabled'} onclick="fbStart()">▶ Mulai Game · ${pids.length} Pemain</button>`:`<div class="card" style="text-align:center;padding:20px"><div class="wp"><span></span><span></span><span></span></div><p style="font-size:13px;color:var(--text2);margin-top:8px">Menunggu host memulai...</p></div>`}<button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Keluar</button>`);}
+
+function rGame(){const r=S.room;const me=r.players[S.myId];const isMyTurn=r.currentTurn===S.myId;const ps=r.players;const pids=Object.keys(ps).sort((a,b)=>(ps[a].joinedAt||0)-(ps[b].joinedAt||0));if(isMyTurn)startTimer(()=>fbExpired());
+render(`<div class="sbar fade"><span class="rnd">💣 Word Bomb</span><span style="font-size:11px;color:var(--text2)">${esc(r.code)}</span></div>
+<div class="bomb-area">
+  <span id="bomb-icon" class="bomb-icon ${isMyTurn&&S.timerLeft<=3?'danger':''}">💣</span>
+  <div class="syllable-box"><div class="syllable-txt">${esc((r.syllable||'').toUpperCase())}</div></div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Kata harus mengandung suku kata ini</div>
+  <div id="timer-txt" style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:${isMyTurn?'var(--acc)':'var(--text3)'};">${Math.ceil(S.timerLeft)}</div>
+</div>
+<div class="player-turn">${isMyTurn?'✨ Giliranmu!':esc(ps[r.currentTurn]?.name||'?')+'\'s turn'}</div>
+${isMyTurn?`<div style="position:relative"><input id="word-inp" class="word-inp" placeholder="KETIK KATA..." maxlength="30" autocomplete="off" autocorrect="off" autocapitalize="on" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){fbSubmit(this.value);this.value=''}"><button class="btn btn-ora" onclick="const i=$('word-inp');fbSubmit(i.value);i.value=''">✓ Kirim</button></div>`:`<div class="card" style="text-align:center;padding:16px"><div class="wp"><span></span><span></span><span></span></div></div>`}
+<div class="card" style="padding:14px">
+  <div class="lbl">Pemain</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+    ${pids.map(id=>{const p=ps[id];const isActive=r.currentTurn===id;const lives=p.alive?p.lives:0;return`<div style="background:${isActive?'rgba(249,115,22,.15)':'rgba(255,255,255,.04)'};border:1.5px solid ${isActive?'rgba(249,115,22,.5)':'var(--border)'};border-radius:12px;padding:8px 12px;text-align:center;min-width:80px"><div style="font-size:12px;font-weight:600;${!p.alive?'text-decoration:line-through;opacity:.4':''}">${esc(p.name)}</div><div class="lives-row">${Array.from({length:MAX_LIVES}).map((_,i)=>`<span class="life">${i<lives?'❤️':'💀'}</span>`).join('')}</div></div>`;}).join('')}
+  </div>
+</div>
+${(r.history||[]).length>0?`<div class="card" style="padding:14px"><div class="lbl">Kata Terakhir</div><div style="margin-top:6px">${[...(r.history||[])].reverse().slice(0,8).map(h=>`<span class="history-chip">🗣 ${esc(h.player)}: <b>${esc(h.word)}</b></span>`).join('')}</div></div>`:''}`);
+setTimeout(()=>{if(isMyTurn)$('word-inp')?.focus();},100);}
+
+function rEnded(){clearSession();const r=S.room,ps=r.players;const sorted=Object.entries(ps).sort((a,b)=>(b[1].lives||0)-(a[1].lives||0));const medals=['🥇','🥈','🥉'];render(`<div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center"><div style="font-size:60px;margin-bottom:10px">💥</div><div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">${esc(r.winReason||'Game Selesai!')}</div><div class="card" style="text-align:left;margin-top:20px"><div class="lbl">Hasil Akhir</div>${sorted.map(([id,p],i)=>`<div class="pi" style="${p.alive?'border-color:rgba(249,115,22,.4);background:rgba(249,115,22,.08)':''}"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">${p.alive?medals[i]||'':'💀'}</span><span style="font-weight:500">${esc(p.name)}${id===S.myId?' <span class="badge b-dim" style="font-size:9px">Kamu</span>':''}</span></div><div class="lives-row">${Array.from({length:MAX_LIVES}).map((_,i)=>`<span class="life">${i<(p.lives||0)?'❤️':'💀'}</span>`).join('')}</div></div>`).join('')}</div>${S.isHost?`<button class="btn btn-ora" onclick="fbPlayAgain()">↺ Main Lagi</button>`:`<div class="card" style="padding:16px;text-align:center"><div class="wp"><span></span><span></span><span></span></div></div>`}<button class="btn btn-ghost" onclick="leaveRoom()" style="margin-top:6px">← Menu Utama</button></div>`);}
+
+// OFFLINE
+function rOffSetup(){render(`<div class="ph" style="margin-top:6px"><div class="ey">Offline</div><h1>Setup Pemain</h1></div><div class="card"><div class="lbl">Jumlah Pemain</div><div class="count-sel"><button class="count-btn" onclick="oChg(-1)">−</button><div id="ocd" class="count-num">${S.oCount}</div><button class="count-btn" onclick="oChg(1)">+</button></div><div style="height:1px;background:var(--border);margin:14px 0"></div><div class="lbl">Nama Pemain</div><div id="onl"></div><button class="btn btn-ora" onclick="oStart()" style="margin-top:14px">▶ Mulai Game</button></div><button class="btn btn-ghost" onclick="rHome()">← Kembali</button>`);renderONames();}
+function oChg(d){S.oCount=Math.max(2,Math.min(12,S.oCount+d));$('ocd').textContent=S.oCount;renderONames();}
+function renderONames(){const c=$('onl');if(!c)return;c.innerHTML=Array.from({length:S.oCount},(_,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:22px;text-align:right;font-size:13px;color:var(--text3);font-weight:600">${i+1}</span><input class="inp" value="${esc(S.oNames[i]||`Pemain ${i+1}`)}" oninput="S.oNames[${i}]=this.value.trim()" placeholder="Pemain ${i+1}" maxlength="20" style="padding:11px 14px"></div>`).join('');}
+function oStart(){S.oPlayers=S.oNames.slice(0,S.oCount).map((n,i)=>({id:i,name:n||`Pemain ${i+1}`,lives:MAX_LIVES,alive:true}));S.oSyl=randSyl();S.oTurn=0;S.oHistory=[];S.oPhase='play';renderOff();}
+function renderOff(){if(S.oPhase==='play')return rOPlay();if(S.oPhase==='ended')return rOEnded();}
+function oAlive(){return S.oPlayers.filter(p=>p.alive);}
+function rOPlay(){const alive=oAlive();const player=alive[S.oTurn%alive.length];render(`<div class="ph" style="margin-top:6px"><div class="ey">💣 Word Bomb</div><h1>${esc(player.name)}</h1></div>
+<div class="bomb-area"><span class="bomb-icon">💣</span><div class="syllable-box"><div class="syllable-txt">${esc(S.oSyl.toUpperCase())}</div></div><div style="font-size:13px;color:var(--text2)">Ketik kata yang mengandung suku kata ini!</div></div>
+<input id="owi" class="word-inp" placeholder="KETIK KATA..." maxlength="30" autocomplete="off" autocorrect="off" autocapitalize="on" spellcheck="false" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')oSubmit(this.value)">
+<button class="btn btn-ora" onclick="oSubmit($('owi').value)" style="margin-top:8px">✓ Kirim Kata</button>
+<button class="btn btn-ghost" onclick="oFail()" style="margin-top:6px">💀 Waktu Habis / Menyerah</button>
+<div class="card" style="padding:14px;margin-top:8px"><div class="lbl">Nyawa</div><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${S.oPlayers.map(p=>`<div style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:8px 12px;text-align:center"><div style="font-size:12px;font-weight:600;${!p.alive?'opacity:.4;text-decoration:line-through':''}">${esc(p.name)}</div><div>${Array.from({length:MAX_LIVES}).map((_,i)=>`<span>${i<p.lives?'❤️':'💀'}</span>`).join('')}</div></div>`).join('')}</div></div>`);setTimeout(()=>$('owi')?.focus(),100);}
+function oSubmit(word){const syl=S.oSyl.toLowerCase();const w=word.trim().toLowerCase();if(w.length<2){toast('Minimal 2 huruf!');return;}if(!w.includes(syl)){toast(`Harus mengandung "${syl.toUpperCase()}"!`);return;}if(S.oHistory.includes(w)){toast('Kata sudah dipakai!');return;}S.oHistory.push(w);S.oSyl=randSyl();const alive=oAlive();S.oTurn=(S.oTurn+1)%alive.length;renderOff();}
+function oFail(){const alive=oAlive();const player=alive[S.oTurn%alive.length];player.lives--;toast(`${player.name} kehilangan 1 nyawa! 💀`);if(player.lives<=0){player.alive=false;if(oAlive().length<=1){S.oPhase='ended';renderOff();return;}S.oSyl=randSyl();}const newAlive=oAlive();S.oTurn=S.oTurn%newAlive.length;S.oSyl=randSyl();renderOff();}
+function rOEnded(){const winner=oAlive()[0];const medals=['🥇','🥈','🥉'];const sorted=[...S.oPlayers].sort((a,b)=>b.lives-a.lives);render(`<div style="padding-top:16px;animation:fadeUp .4s ease both;text-align:center"><div style="font-size:60px;margin-bottom:10px">💥</div><div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--acc2)">${winner?esc(winner.name)+' Menang!':'Game Selesai!'}</div><div class="card" style="text-align:left;margin-top:20px"><div class="lbl">Hasil</div>${sorted.map((p,i)=>`<div class="pi" style="${p.alive?'border-color:rgba(249,115,22,.4)':''}"><div style="display:flex;align-items:center;gap:8px"><span>${p.alive?medals[i]||'':'💀'}</span><span style="font-weight:500">${esc(p.name)}</span></div><div>${Array.from({length:MAX_LIVES}).map((_,j)=>`<span>${j<p.lives?'❤️':'💀'}</span>`).join('')}</div></div>`).join('')}</div><button class="btn btn-ora" onclick="oStart()">↺ Main Lagi</button><button class="btn btn-ghost" onclick="S.mode='online';rHome()" style="margin-top:6px">← Menu Utama</button></div>`);}
+
+window.onload=async()=>{try{cleanupOldRooms();}catch(e){}try{const r=await tryResumeSession();if(!r)rHome();}catch(e){rHome();}};
+</script>
+</body>
+</html>

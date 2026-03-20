@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Game Hub</title>
+  <title>Noctyra Games</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -28,7 +28,6 @@
     @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
     @keyframes iconBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
-    /* HEADER */
     .hub-header{text-align:center;margin-bottom:32px;animation:fadeUp .5s .1s both}
     .hub-badge{
       display:inline-flex;align-items:center;gap:6px;
@@ -45,14 +44,19 @@
     }
     .hub-sub{font-size:14px;color:var(--text2);margin-top:8px}
 
-    /* GAME CARDS */
-    .games-grid{display:flex;flex-direction:column;gap:14px}
+    /* SECTION LABEL */
+    .section-label{
+      font-size:10px;font-weight:700;letter-spacing:3px;color:var(--text3);
+      text-transform:uppercase;margin:24px 0 10px;padding-left:4px;
+    }
+
+    .games-grid{display:flex;flex-direction:column;gap:12px}
 
     .game-card{
       background:var(--glass);
       backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-      border:1.5px solid var(--border);border-radius:22px;
-      padding:22px;cursor:pointer;
+      border:1.5px solid var(--border);border-radius:20px;
+      padding:18px 18px 14px;cursor:pointer;
       transition:transform .2s,border-color .2s,background .2s;
       text-decoration:none;color:inherit;display:block;
       position:relative;overflow:hidden;
@@ -65,38 +69,23 @@
     .game-card:active{transform:scale(.97)}
     .game-card:hover{background:var(--glass2)}
 
-    .game-card.spy{border-color:rgba(108,99,255,.3);animation-delay:.15s}
-    .game-card.spy:hover{border-color:rgba(108,99,255,.5);background:rgba(108,99,255,.08)}
-    .game-card.wolf{border-color:rgba(248,113,113,.3);animation-delay:.25s}
-    .game-card.wolf:hover{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.08)}
-    .game-card.tod{border-color:rgba(251,191,36,.3);animation-delay:.35s}
-    .game-card.tod:hover{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
-
-    .card-top{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px}
+    .card-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:12px}
     .card-icon{
-      width:58px;height:58px;border-radius:16px;
+      width:52px;height:52px;border-radius:14px;
       display:flex;align-items:center;justify-content:center;
-      font-size:28px;flex-shrink:0;
+      font-size:26px;flex-shrink:0;
       animation:iconBounce 3s ease-in-out infinite;
     }
-    .spy .card-icon{background:rgba(108,99,255,.2);animation-delay:0s}
-    .wolf .card-icon{background:rgba(248,113,113,.2);animation-delay:.5s}
-    .tod .card-icon{background:rgba(251,191,36,.2);animation-delay:1s}
-
-    .card-info{flex:1}
+    .card-info{flex:1;min-width:0}
     .card-name{
-      font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
-      letter-spacing:-.3px;margin-bottom:4px;
+      font-family:'Syne',sans-serif;font-size:18px;font-weight:800;
+      letter-spacing:-.3px;margin-bottom:3px;
     }
-    .spy .card-name{color:#a78bfa}
-    .wolf .card-name{color:#f87171}
-    .tod .card-name{color:#fbbf24}
+    .card-desc{font-size:12px;color:var(--text2);line-height:1.5}
 
-    .card-desc{font-size:13px;color:var(--text2);line-height:1.5}
-
-    .card-tags{display:flex;gap:6px;flex-wrap:wrap}
+    .card-tags{display:flex;gap:5px;flex-wrap:wrap}
     .tag{
-      padding:4px 10px;border-radius:100px;font-size:10px;font-weight:700;
+      padding:3px 9px;border-radius:100px;font-size:9px;font-weight:700;
       letter-spacing:1px;text-transform:uppercase;
     }
     .tag-online{background:rgba(45,212,191,.15);color:var(--teal);border:1px solid rgba(45,212,191,.3)}
@@ -104,14 +93,13 @@
     .tag-players{background:rgba(255,255,255,.08);color:var(--text2);border:1px solid var(--border2)}
 
     .card-arrow{
-      position:absolute;right:20px;top:50%;transform:translateY(-50%);
-      font-size:20px;color:var(--text3);transition:transform .2s,color .2s;
+      position:absolute;right:18px;top:50%;transform:translateY(-50%);
+      font-size:18px;color:var(--text3);transition:transform .2s,color .2s;
     }
     .game-card:hover .card-arrow{transform:translateY(-50%) translateX(3px);color:var(--text2)}
 
-    /* FOOTER */
     .hub-footer{
-      text-align:center;margin-top:28px;font-size:11px;color:var(--text3);
+      text-align:center;margin-top:32px;font-size:11px;color:var(--text3);
       animation:fadeUp .5s .5s both;
     }
   </style>
@@ -130,15 +118,16 @@
       <div class="hub-sub">Pilih game dan mulai bermain!</div>
     </div>
 
+    <!-- ── SOCIAL DEDUCTION ── -->
+    <div class="section-label">🕵️ Social Deduction</div>
     <div class="games-grid">
 
-      <!-- WHO THE SPY -->
-      <a href="who-the-spy.html" class="game-card spy">
+      <a href="who-the-spy.html" class="game-card" style="border-color:rgba(108,99,255,.3);animation-delay:.1s">
         <div class="card-top">
-          <div class="card-icon">🕵️</div>
+          <div class="card-icon" style="background:rgba(108,99,255,.2)">🕵️</div>
           <div class="card-info">
-            <div class="card-name">Who The Spy</div>
-            <div class="card-desc">Temukan mata-mata di antara kamu berdasarkan perbedaan kata petunjuk</div>
+            <div class="card-name" style="color:#a78bfa">Who The Spy</div>
+            <div class="card-desc">Temukan mata-mata berdasarkan perbedaan kata petunjuk</div>
           </div>
         </div>
         <div class="card-tags">
@@ -149,30 +138,49 @@
         <span class="card-arrow">→</span>
       </a>
 
-      <!-- WEREWOLF -->
-      <a href="werewolf.html" class="game-card wolf">
+      <a href="werewolf.html" class="game-card" style="border-color:rgba(248,113,113,.3);animation-delay:.15s">
         <div class="card-top">
-          <div class="card-icon">🐺</div>
+          <div class="card-icon" style="background:rgba(248,113,113,.2)">🔪</div>
           <div class="card-info">
-            <div class="card-name">Werewolf</div>
-            <div class="card-desc">Warga vs Werewolf — temukan siapa yang berpura-pura menjadi warga baik</div>
+            <div class="card-name" style="color:#f87171">Mafia</div>
+            <div class="card-desc">Warga vs Mafia — 7 peran unik, diskusi, voting, eliminasi!</div>
           </div>
         </div>
         <div class="card-tags">
           <span class="tag tag-online">Online</span>
           <span class="tag tag-offline">Offline</span>
-          <span class="tag tag-players">5–15 Pemain</span>
+          <span class="tag tag-players">4–15 Pemain</span>
         </div>
         <span class="card-arrow">→</span>
       </a>
 
-      <!-- TRUTH OR DARE -->
-      <a href="truth-or-dare.html" class="game-card tod">
+      <a href="codenames.html" class="game-card" style="border-color:rgba(96,165,250,.3);animation-delay:.2s">
         <div class="card-top">
-          <div class="card-icon">🎲</div>
+          <div class="card-icon" style="background:rgba(96,165,250,.2)">🔤</div>
           <div class="card-info">
-            <div class="card-name">Truth or Dare</div>
-            <div class="card-desc">Jawab pertanyaan jujur atau lakukan tantangan seru bersama teman</div>
+            <div class="card-name" style="color:#93c5fd">Tebak Kata</div>
+            <div class="card-desc">Codenames — 2 tim, spymaster kasih petunjuk 1 kata untuk banyak kata</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-online">Online</span>
+          <span class="tag tag-players">4–16 Pemain</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </a>
+
+    </div>
+
+    <!-- ── PARTY GAMES ── -->
+    <div class="section-label">🎉 Party Games</div>
+    <div class="games-grid">
+
+      <a href="truth-or-dare.html" class="game-card" style="border-color:rgba(251,191,36,.3);animation-delay:.25s">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(251,191,36,.2)">🎲</div>
+          <div class="card-info">
+            <div class="card-name" style="color:#fbbf24">Truth or Dare</div>
+            <div class="card-desc">Jawab jujur atau lakukan tantangan seru bersama teman</div>
           </div>
         </div>
         <div class="card-tags">
@@ -183,10 +191,9 @@
         <span class="card-arrow">→</span>
       </a>
 
-      <!-- MOST LIKELY TO -->
-      <a href="most-likely-to.html" class="game-card" style="border-color:rgba(245,158,11,.3);animation-delay:.45s">
+      <a href="most-likely-to.html" class="game-card" style="border-color:rgba(245,158,11,.3);animation-delay:.3s">
         <div class="card-top">
-          <div class="card-icon" style="background:rgba(245,158,11,.2);animation-delay:1.5s">🏆</div>
+          <div class="card-icon" style="background:rgba(245,158,11,.2)">🏆</div>
           <div class="card-info">
             <div class="card-name" style="color:#fbbf24">Most Likely To</div>
             <div class="card-desc">Vote siapa yang paling mungkin melakukan sesuatu — raih poin terbanyak!</div>
@@ -200,13 +207,12 @@
         <span class="card-arrow">→</span>
       </a>
 
-      <!-- NEVER HAVE I EVER -->
-      <a href="never-have-i-ever.html" class="game-card" style="border-color:rgba(34,211,238,.3);animation-delay:.55s">
+      <a href="never-have-i-ever.html" class="game-card" style="border-color:rgba(34,211,238,.3);animation-delay:.35s">
         <div class="card-top">
-          <div class="card-icon" style="background:rgba(34,211,238,.2);animation-delay:2s">🙅</div>
+          <div class="card-icon" style="background:rgba(34,211,238,.2)">🙅</div>
           <div class="card-info">
             <div class="card-name" style="color:#67e8f9">Never Have I Ever</div>
-            <div class="card-desc">Punya 5 token — habis token = eliminasi! Buktikan siapa yang paling suci</div>
+            <div class="card-desc">Punya 5 token — setiap "pernah" token berkurang, habis = eliminasi!</div>
           </div>
         </div>
         <div class="card-tags">
@@ -217,31 +223,34 @@
         <span class="card-arrow">→</span>
       </a>
 
-      <!-- CODENAMES -->
-      <a href="codenames.html" class="game-card" style="border-color:rgba(96,165,250,.3);animation-delay:.65s">
+      <a href="would-you-rather.html" class="game-card" style="border-color:rgba(139,92,246,.3);animation-delay:.4s">
         <div class="card-top">
-          <div class="card-icon" style="background:rgba(96,165,250,.2);animation-delay:2.5s">🔤</div>
+          <div class="card-icon" style="background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(6,182,212,.15))">🤔</div>
           <div class="card-info">
-            <div class="card-name" style="color:#93c5fd">Tebak Kata</div>
-            <div class="card-desc">Codenames — 2 tim rebutan kata di papan, dipandu spymaster dengan petunjuk 1 kata</div>
+            <div class="card-name" style="color:#a78bfa">Would You Rather</div>
+            <div class="card-desc">Pilih antara 2 opsi sulit — reveal semua jawaban lalu debat!</div>
           </div>
         </div>
         <div class="card-tags">
           <span class="tag tag-online">Online</span>
-          <span class="tag tag-players">4–16 Pemain</span>
+          <span class="tag tag-offline">Offline</span>
+          <span class="tag tag-players">2–20 Pemain</span>
         </div>
         <span class="card-arrow">→</span>
       </a>
 
     </div>
 
-      <!-- UNO -->
-      <a href="uno.html" class="game-card" style="border-color:rgba(239,68,68,.4);animation-delay:.75s;background:rgba(239,68,68,.06)">
+    <!-- ── CARD & WORD GAMES ── -->
+    <div class="section-label">🃏 Kartu & Kata</div>
+    <div class="games-grid">
+
+      <a href="uno.html" class="game-card" style="border-color:rgba(239,68,68,.4);animation-delay:.45s;background:rgba(239,68,68,.05)">
         <div class="card-top">
-          <div class="card-icon" style="background:linear-gradient(135deg,rgba(239,68,68,.3),rgba(234,179,8,.2));animation-delay:3s">🃏</div>
+          <div class="card-icon" style="background:linear-gradient(135deg,rgba(239,68,68,.3),rgba(234,179,8,.2))">🃏</div>
           <div class="card-info">
             <div class="card-name" style="background:linear-gradient(135deg,#ef4444,#eab308,#22c55e,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">UNO!</div>
-            <div class="card-desc">Game kartu klasik — mainkan kartu cocok, habiskan tangan, dan teriak UNO saat tinggal 1!</div>
+            <div class="card-desc">Game kartu klasik — mainkan kartu cocok, habiskan tangan, teriak UNO!</div>
           </div>
         </div>
         <div class="card-tags">
@@ -251,9 +260,62 @@
         <span class="card-arrow">→</span>
       </a>
 
+      <a href="word-bomb.html" class="game-card" style="border-color:rgba(249,115,22,.35);animation-delay:.5s">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(249,115,22,.2)">💣</div>
+          <div class="card-info">
+            <div class="card-name" style="color:#fb923c">Word Bomb</div>
+            <div class="card-desc">Sebut kata yang mengandung suku kata tertentu sebelum bom meledak!</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-online">Online</span>
+          <span class="tag tag-offline">Offline</span>
+          <span class="tag tag-players">2–12 Pemain</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </a>
+
     </div>
 
-    <div class="hub-footer">Gratis · Tanpa login · Langsung main bersama</div>
+    <!-- ── BRAIN GAMES ── -->
+    <div class="section-label">🧠 Brain Games</div>
+    <div class="games-grid">
+
+      <a href="trivia.html" class="game-card" style="border-color:rgba(34,197,94,.3);animation-delay:.55s">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(34,197,94,.2)">🧠</div>
+          <div class="card-info">
+            <div class="card-name" style="color:#4ade80">Trivia Kuis</div>
+            <div class="card-desc">Soal pilihan ganda seputar Indonesia & dunia — jawab paling cepat dapat poin lebih!</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-online">Online</span>
+          <span class="tag tag-offline">Offline</span>
+          <span class="tag tag-players">1–20 Pemain</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a href="skribbl.html" class="game-card" style="border-color:rgba(236,72,153,.3);animation-delay:.6s">
+        <div class="card-top">
+          <div class="card-icon" style="background:rgba(236,72,153,.2)">🎨</div>
+          <div class="card-info">
+            <div class="card-name" style="color:#f472b6">Tebak Gambar</div>
+            <div class="card-desc">Gambar kata rahasiamu, biarkan temanmu tebak! Makin cepat = makin banyak poin</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-online">Online</span>
+          <span class="tag tag-players">2–8 Pemain</span>
+        </div>
+        <span class="card-arrow">→</span>
+      </a>
+
+    </div>
+
+    <div class="hub-footer">11 Game · Gratis · Tanpa login · Langsung main</div>
   </div>
 </body>
 </html>
