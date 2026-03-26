@@ -1,6 +1,6 @@
 // ws-client.js — WebSocket client untuk Noctyra Games
 // Ganti URL sesuai server Pterodactyl kamu
-const WS_URL = 'wss://panelsaluler.jhonaley.net:2066';
+const WS_URL = 'wss://websocket-production-c897.up.railway.app';
 
 class NoctyraWS {
   constructor() {
